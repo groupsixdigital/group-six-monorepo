@@ -23,7 +23,7 @@
           >&#10005;</span
         >
       </div>
-      <textarea v-if="type === 'textarea'" :name="name" :placeholder="placeholder" :minlength="minlength" :value="modelValue" :rows="rows" class="textarea textarea-bordered w-full" :required="required" @input="$emit('update:modelValue', $event.target.value)" @blur="checkValidity" :class="{
+      <textarea v-if="type === 'textarea'" :name="name" :placeholder="placeholder" :id="`${name}_${type}`" :minlength="minlength" :value="modelValue" :rows="rows" class="textarea textarea-bordered w-full" :required="required" @input="$emit('update:modelValue', $event.target.value)" @blur="checkValidity" :class="{
           'pl-10': $slots.icon,
           'ring-error ring-1': !validity
         }" />
@@ -31,7 +31,7 @@
       v-else
         :type="type"
         :name="name"
-        :id="name"
+        :id="`${name}_${type}`"
         :placeholder="placeholder"
         class="input input-bordered w-full"
         :class="{
@@ -207,7 +207,9 @@ async function checkValidity(e) {
   
   
   const currentElement = document.getElementById(`${props.name}_${props.type}`)
+  console.log(currentElement)
   const formElement = currentElement?.closest("form")?.id
+  console.log(formElement)
   emits('update:modelValue', newValue)
   setFormState(formElement, props.name, newValue)
   setValidity(formElement, props.name, validity.value)
