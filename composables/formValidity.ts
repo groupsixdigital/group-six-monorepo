@@ -45,9 +45,9 @@ const validityState = ref(new Map());
  * @param formElementId string ID of <Form name=?>
  * @returns NOTHING
  */
-  function removeformValidity(formElementId: string) {
+  function removeFormValidity(formElementId: string) {
     validityState.value.delete(formElementId)
   }
 
 
-export { getValidity, setValidity, removeformValidity }
+export { getValidity, setValidity, removeFormValidity }
