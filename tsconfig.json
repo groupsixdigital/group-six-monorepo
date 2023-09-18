@@ -1,4 +1,4 @@
 {
   // https://v3.nuxtjs.org/concepts/typescript
-  "extends": "../mulch-enterprises/.nuxt/tsconfig.json"
+  "extends": "../morgan-domains/.nuxt/tsconfig.json"
 }

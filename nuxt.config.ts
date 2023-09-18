@@ -6,5 +6,5 @@ export default defineNuxtConfig({
     includeWorkspace: true
   },
 
-  modules: ["@vueuse/nuxt", "@nuxtjs/tailwindcss"]
+  modules: ["@vueuse/nuxt"]
 });
