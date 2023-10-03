@@ -1,5 +1,5 @@
 <template>
-  <form :id="`form_${name}`" :action=action>
+  <form :id="`form_${name}`" :name="`form_${name}`" :action=action>
     <slot :valid="formIsValid" />
   </form>
 </template>

@@ -1,6 +1,7 @@
 <template>
   <div class="form-control" :id="`${name}_${type}`">
-    <label class="label pb-1 pt-0" :class="{ 'sr-only': !label }" :for="name"
+<div class="flex items-center">
+  <label class="label pb-1 pt-0" :class="{ 'sr-only': labelHidden }" :for="name"
       ><span v-text="label" />
       <span v-if="!requiredValidity" class="text-warning italic text-xs -mb-4">
         required</span
@@ -23,10 +24,12 @@
           >&#10005;</span
         >
       </div>
+      <!-- SHOW IF TYPE == TEXT AREA -->
       <textarea v-if="type === 'textarea'" :name="name" :placeholder="placeholder" :id="`${name}_${type}`" :minlength="minlength" :value="modelValue" :rows="rows" class="textarea textarea-bordered w-full" :required="required" @input="$emit('update:modelValue', $event.target.value)" @blur="checkValidity" :class="{
           'pl-10': $slots.icon,
           'ring-error ring-1': !validity
         }" />
+        <!-- ALL STANDARD INPUTS -->
       <input
       v-else
         :type="type"
@@ -49,11 +52,9 @@
         :pattern="patterns[type] || undefined"
         :value="modelValue"
         :autocomplete="autocomplete || 'off'"
-        @input="$emit('update:modelValue', $event.target.value)"
+        @input="inputValues"
          @blur="checkValidity" />
-      <div class="text-2xl">
-        <slot name="action-icon"></slot>
-      </div>
+
 
       <div
         v-if="type === 'range'"
@@ -65,10 +66,15 @@
         <span>{{ mid ? mid * 4 : "?" }}</span>
       </div>
     </div>
+    <!-- action icons to the right of the input -- provides a dirty feeling -->
+    <div class="text-2xl">
+        <slot name="actionIcon" :isDirty="dirty"></slot>
+      </div>
     <!-- Email Format Error Message -->
     <div v-if="!validity" class="text-error italic text-xs text-right">
       {{ validityMessage }}
     </div>
+</div>
   </div>
 </template>
 
@@ -114,6 +120,7 @@ type InputType =
 
 const props = defineProps<{
   label: string;
+  labelHidden?: boolean;
   name: string;
   type: InputType;
   placeholder?: string;
@@ -145,10 +152,19 @@ const validity = ref(true);
 const requiredValidity = ref(true);
 // message shows if validity == false
 const validityMessage = ref("");
+// TODO: make actual dirty -- currently showing dirty when field is blurred.
 const dirty = ref(false);
 
-async function checkValidity(e) {
-  if (!dirty.value) dirty.value = true;
+async function inputValues(e: InputEvent) {
+  let oldValue = props.modelValue;
+let newValue = e.target.value;
+if(oldValue !== newValue) dirty.value = true
+  emits('update:modelValue', e.target.value)
+}
+
+async function checkValidity(e: InputEvent) {
+  let newValue = e.target.value
+  // compare values, then determine if is now dirty.
   const result = e.target.validity;
   let message = "";
 
@@ -197,7 +213,6 @@ async function checkValidity(e) {
 
   // Remove erroneous characters. If listed props are found on component, corresponding patterns will be applied to the text, cleaned, and emitted to parent component.
   const textCleaners = ['alpha', 'alphanumeric'];
-  let newValue = e.target.value
   textCleaners.forEach(v => {
     if(props[v] === true) {
       newValue = newValue.replace(patterns[v], '')
