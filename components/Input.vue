@@ -207,9 +207,7 @@ async function checkValidity(e) {
   
   
   const currentElement = document.getElementById(`${props.name}_${props.type}`)
-  console.log(currentElement)
   const formElement = currentElement?.closest("form")?.id
-  console.log(formElement)
   emits('update:modelValue', newValue)
   setFormState(formElement, props.name, newValue)
   setValidity(formElement, props.name, validity.value)
