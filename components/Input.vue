@@ -1,5 +1,5 @@
 <template>
-  <div class="form-control" :id="`${name}_${type}`">
+  <div class="form-control">
 <div class=" items-center">
   <label class="label pb-1 pt-0" :class="{ 'sr-only': labelHidden }" :for="name"
       ><span v-text="label" />
@@ -25,7 +25,7 @@
         >
       </div>
       <!-- SHOW IF TYPE == TEXT AREA -->
-      <textarea v-if="type === 'textarea'" :name="name" :placeholder="placeholder" :id="`${name}_${type}`" :minlength="minlength" :value="modelValue" :rows="rows" class="textarea textarea-bordered w-full" :required="required" @input="$emit('update:modelValue', $event.target.value)" @blur="checkValidity" :class="{
+      <textarea v-if="type === 'textarea'" :name="name" :placeholder="placeholder" :id="`${name}_${type}`" :minlength="minlength" :value="modelValue" :rows="rows" class="textarea textarea-bordered w-full" :required="required" @input="inputValues"  :class="{
           'pl-10': $slots.icon,
           'ring-error ring-1': !validity
         }" />
@@ -52,8 +52,7 @@
         :pattern="patterns[type] || undefined"
         :value="modelValue"
         :autocomplete="autocomplete || 'off'"
-        @input="inputValues"
-         @blur="checkValidity" />
+        @input="inputValues"         />
 
 
       <div
@@ -79,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { emit } from 'process';
+import { useDebounceFn } from "@vueuse/core";
 
 type AutoComplete =
   | "off"
@@ -155,14 +154,21 @@ const validityMessage = ref("");
 // TODO: make actual dirty -- currently showing dirty when field is blurred.
 const dirty = ref(false);
 
+
 async function inputValues(e: InputEvent) {
   let oldValue = props.modelValue;
 let newValue = e.target.value;
 if(oldValue !== newValue) dirty.value = true
   emits('update:modelValue', e.target.value)
+  debouncedCheckValidity(e);
 }
 
+const debouncedCheckValidity = useDebounceFn((e: InputEvent) => {
+  checkValidity(e)
+}, 375)
+
 async function checkValidity(e: InputEvent) {
+   
   let newValue = e.target.value
   // compare values, then determine if is now dirty.
   const result = e.target.validity;

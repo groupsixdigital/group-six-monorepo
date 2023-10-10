@@ -7,7 +7,6 @@ const validityState = ref(new Map());
  * @returns global form validity
  */
   function getValidity(name: string) {
-    console.log('validityState', name, validityState)
     return validityState
   }
 
