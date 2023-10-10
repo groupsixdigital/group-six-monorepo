@@ -12,9 +12,7 @@ const props = defineProps({
     required: true
   }
 })
-const globalFormValidity = getValidity() // ref from state
+const globalFormValidity = getValidity(props.name) // ref from state
 const formIsValid = computed(() => !globalFormValidity.value.has(`form_${props.name}`))
-onBeforeUnmount(() => removeFormValidity()) // When destroying this form, remove all form data from validity state
+onBeforeUnmount(() => removeFormValidity(props.name)) // When destroying this form, remove all form data from validity state
 </script>
-
-<style scoped></style>

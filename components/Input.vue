@@ -1,6 +1,6 @@
 <template>
   <div class="form-control" :id="`${name}_${type}`">
-<div class="flex items-center">
+<div class=" items-center">
   <label class="label pb-1 pt-0" :class="{ 'sr-only': labelHidden }" :for="name"
       ><span v-text="label" />
       <span v-if="!requiredValidity" class="text-warning italic text-xs -mb-4">
@@ -68,8 +68,8 @@
     </div>
     <!-- action icons to the right of the input -- provides a dirty feeling -->
     <div class="text-2xl">
-        <slot name="actionIcon" :isDirty="dirty"></slot>
-      </div>
+      <slot name="actionIcon" :isDirty="dirty"></slot>
+    </div>
     <!-- Email Format Error Message -->
     <div v-if="!validity" class="text-error italic text-xs text-right">
       {{ validityMessage }}
@@ -221,11 +221,11 @@ async function checkValidity(e: InputEvent) {
   
   
   
-  const currentElement = document.getElementById(`${props.name}_${props.type}`)
-  const formElement = currentElement?.closest("form")?.id
-  emits('update:modelValue', newValue)
-  setFormState(formElement, props.name, newValue)
-  setValidity(formElement, props.name, validity.value)
+  const currentElement = document.getElementById(`${props.name}_${props.type}`);
+  const formElement = currentElement?.closest("form")?.id;
+  emits('update:modelValue', newValue);
+  setFormState(formElement, props.name, newValue);
+  setValidity(formElement, props.name, validity.value);
 }
 
 onMounted(() => {

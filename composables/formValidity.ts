@@ -3,11 +3,16 @@ const validityState = ref(new Map());
 
 /**
  * State management for all <Forms validity
+ * @param name name of form
  * @returns global form validity
  */
-  function getValidity() {
+  function getValidity(name: string) {
+    console.log('validityState', name, validityState)
     return validityState
   }
+
+
+
 
   /**
  * State management for all <Forms validity
@@ -40,13 +45,15 @@ const validityState = ref(new Map());
   return
   }
 
+
+
   /**
  * REMOVES FORM FROM State management for all <Forms validity
  * @param formElementId string ID of <Form name=?>
  * @returns NOTHING
  */
-  function removeFormValidity(formElementId: string) {
-    validityState.value.delete(formElementId)
+  function removeFormValidity(name: string) {
+    validityState.value.delete(`form_name`)
   }
 
 
