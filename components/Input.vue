@@ -51,8 +51,10 @@
         :autofocus="autofocus"
         :pattern="patterns[type] || undefined"
         :value="modelValue"
+        v-model="modelValue"
         :autocomplete="autocomplete || 'off'"
-        @input="inputValues"         />
+        @input="inputValues"
+        />
 
 
       <div
@@ -143,8 +145,6 @@ const props = defineProps<{
   alphanumeric?: boolean;
 }>();
 
-// use v-model on component in parent
-const emits = defineEmits(["update:modelValue", "validity"]);
 // true: valid, false: invalid
 const validity = ref(true);
 // true: required field is filled, false: required field is empty
@@ -154,12 +154,13 @@ const validityMessage = ref("");
 // TODO: make actual dirty -- currently showing dirty when field is blurred.
 const dirty = ref(false);
 
+// v-model
+const modelValue = defineModel();
 
 async function inputValues(e: InputEvent) {
   let oldValue = props.modelValue;
 let newValue = e.target.value;
 if(oldValue !== newValue) dirty.value = true
-  emits('update:modelValue', e.target.value)
   debouncedCheckValidity(e);
 }
 
@@ -229,7 +230,6 @@ async function checkValidity(e: InputEvent) {
   
   const currentElement = document.getElementById(`${props.name}_${props.type}`);
   const formElement = currentElement?.closest("form")?.id;
-  emits('update:modelValue', newValue);
   setFormState(formElement, props.name, newValue);
   setValidity(formElement, props.name, validity.value);
 }
