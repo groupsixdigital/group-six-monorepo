@@ -6,8 +6,9 @@
         :name="name"
         rememberMe="checked"
         class="checkbox"
-        :value="modelValue"
-        @input="$emit('update:modelValue', $event.target.value)" />
+        
+        v-model="modelValue"
+         />
       <label
         v-if="label"
         class="label-text select-none cursor-pointer text-sm leading-5"
@@ -18,8 +19,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ label: text; name: text; modelValue: boolean }>();
-defineEmits(["update:modelValue"]);
+defineProps<{ label: string; name: string; modelValue: boolean }>();
+const emits = defineEmits(["update:modelValue"]);
+const modelValue = defineModel();
 </script>
 
 <style scoped></style>
