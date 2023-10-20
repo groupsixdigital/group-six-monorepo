@@ -48,7 +48,6 @@
         :min="min"
         :step="step"
         :disabled="disabled"
-        :autofocus="autofocus"
         :pattern="patterns[type] || undefined"
         :value="modelValue"
         v-model="modelValue"
@@ -118,7 +117,6 @@ type InputType =
   | "url"
   | "tel"
   | "textarea";
-
 const props = defineProps<{
   label: string;
   labelHidden?: boolean;
@@ -132,14 +130,10 @@ const props = defineProps<{
   min?: number;
   step?: number;
   mid?: number;
-  value?: number;
-  modelValue: any;
+  value?: number | string;
   disabled?: boolean;
-  submitting?: boolean;
   autocomplete?: AutoComplete;
-  retype?: any;
-  showValidIcon?: boolean;
-  autofocus?: boolean;
+  retype?: boolean;
   rows?: number;
   alpha?: boolean;
   alphanumeric?: boolean;
@@ -158,9 +152,7 @@ const dirty = ref(false);
 const modelValue = defineModel();
 
 async function inputValues(e: InputEvent) {
-  let oldValue = props.modelValue;
-let newValue = e.target.value;
-if(oldValue !== newValue) dirty.value = true
+if(e.target.value) dirty.value = true
   debouncedCheckValidity(e);
 }
 
@@ -226,12 +218,10 @@ async function checkValidity(e: InputEvent) {
     }
   });
   
-  
-  
+   
   const currentElement = document.getElementById(`${props.name}_${props.type}`);
   const formElement = currentElement?.closest("form")?.id;
   setFormState(formElement, props.name, newValue);
-  setValidity(formElement, props.name, validity.value);
 }
 
 onMounted(() => {
@@ -268,6 +258,9 @@ const patterns = {
   alpha: /[^a-z ]/gi,
   alphanumeric: /[^a-z0-9 ]/gi
 }
+
+defineExpose({validity, requiredValidity, dirty})
+
 </script>
 <style>
 input:user-invalid, textarea:user-invalid {

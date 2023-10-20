@@ -1,6 +1,6 @@
 <template>
   <form :id="`form_${name}`" :name="`form_${name}`" :action=action>
-    <slot :valid="formIsValid" />
+    <slot :valid="formIsValid" :dirty="formIsDirty" />
   </form>
 </template>
 
@@ -10,9 +10,40 @@ const props = defineProps({
   name: {
     type: String,
     required: true
-  }
+  },
+  fields: Array<FieldsType>
 })
-const globalFormValidity = getValidity(props.name) // ref from state
-const formIsValid = computed(() => !globalFormValidity.value.has(`form_${props.name}`))
-onBeforeUnmount(() => removeFormValidity(props.name)) // When destroying this form, remove all form data from validity state
+
+interface FieldsType {
+  validity: boolean;
+  requiredValidity: boolean;
+  dirty: boolean;
+}
+
+const formIsValid = computed(() => {
+  let result = true;
+if(props.fields) {
+  for (const field of props.fields) {
+    if(field) {
+
+      if(field?.validity === false || field?.requiredValidity === false) result = false
+      else result = true
+    }
+  }
+}
+return result
+})
+
+const formIsDirty = computed(() => {
+  let result = false;
+  if(props.fields) {
+    for(const field of props.fields) {
+      if(field) {
+        if(field?.dirty === true) result = true
+        else result = false
+      }
+    }
+  }
+  return result
+})
 </script>
