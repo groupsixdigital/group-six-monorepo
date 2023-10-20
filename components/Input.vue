@@ -1,143 +1,137 @@
 <template>
   <div class="form-control">
-<div class=" items-center">
-  <label class="label pb-1 pt-0" :class="{ 'sr-only': labelHidden }" :for="name"
-      ><span v-text="label" />
-      <span v-if="!requiredValidity" class="text-warning italic text-xs -mb-4">
-        required</span
-      >
-    </label>
+    <div class="items-center">
+      <label class="label pb-1 pt-0" :class="{ 'sr-only': labelHidden }" :for="name"><span v-text="label" />
+        <span v-if="!requiredValidity" class="text-warning italic text-xs -mb-4">
+          required</span>
+      </label>
 
-    <div class="w-full relative flex items-center">
-      <!-- Icon: Named Slot -- front side of input -->
-      <div class="ml-3 text-2xl absolute">
-        <slot name="icon" />
-      </div>
-      <!-- Icon: Back side of Input -- clear input -->
-      <div
-        v-if="modelValue && type !== 'number' && type !== 'date'"
-        class="mr-3 absolute right-0 tooltip"
-        data-tip="Clear Input">
-        <span
-          class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
-          @click="$emit('update:modelValue', '')"
-          >&#10005;</span
-        >
-      </div>
-      <!-- SHOW IF TYPE == TEXT AREA -->
-      <textarea v-if="type === 'textarea'" :name="name" :placeholder="placeholder" :id="`${name}_${type}`" :minlength="minlength" :value="modelValue" :rows="rows" class="textarea textarea-bordered w-full" :required="required" @input="inputValues"  :class="{
-          'pl-10': $slots.icon,
-          'ring-error ring-1': !validity
-        }" />
+      <div class="w-full relative flex items-center">
+        <!-- Icon: Named Slot -- front side of input -->
+        <div class="ml-3 text-2xl absolute">
+          <slot name="icon" />
+        </div>
+        <!-- Icon: Back side of Input -- clear input -->
+        <div v-if="modelValue && type !== 'number' && type !== 'date'" class="mr-3 absolute right-0 tooltip"
+          data-tip="Clear Input">
+          <span class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
+            @click="$emit('update:modelValue', '')">&#10005;</span>
+        </div>
+        <!-- SHOW IF TYPE == TEXT AREA -->
+        <textarea v-if="type === 'textarea'" :name="name" :placeholder="placeholder" :id="`${name}_${type}`"
+          :minlength="minlength" :value="modelValue" :rows="rows" class="textarea textarea-bordered w-full"
+          :required="required" @input="inputValues" :class="{
+            'pl-10': $slots.icon,
+            'ring-error ring-1': !validity,
+          }" />
         <!-- ALL STANDARD INPUTS -->
-      <input
-      v-else
-        :type="type"
-        :name="name"
-        :id="`${name}_${type}`"
-        :placeholder="placeholder"
-        class="input input-bordered w-full"
-        :class="{
-          'range': type === 'range',
-          'pl-10': $slots.icon,
-          'ring-error ring-1': !validity
-        }"
-        :required="required"
-        :minlength="minlength"
-        :max="max"
-        :min="min"
-        :step="step"
-        :disabled="disabled"
-        :pattern="patterns[type] || undefined"
-        :value="modelValue"
-        v-model="modelValue"
-        :autocomplete="autocomplete || 'off'"
-        @input="inputValues"
-        />
+        <input v-else :type="type" :name="name" :id="`${name}_${type}`" :placeholder="placeholder"
+          class="input input-bordered w-full" :class="{
+            range: type === 'range',
+            'pl-10': $slots.icon,
+            'ring-error ring-1': !validity,
+          }" :required="required" :minlength="minlength" :max="max" :min="min" :step="step" :disabled="disabled"
+          :pattern="patterns[type] || undefined" :value="modelValue" v-model="modelValue"
+          :autocomplete="autocomplete || 'off'" @input="inputValues" />
 
-
-      <div
-        v-if="type === 'range'"
-        class="w-full flex justify-between text-xs px-2">
-        <span>0</span>
-        <span>{{ mid || "?" }}</span>
-        <span>{{ mid ? mid * 2 : "?" }}</span>
-        <span>{{ mid ? mid * 3 : "?" }}</span>
-        <span>{{ mid ? mid * 4 : "?" }}</span>
+        <div v-if="type === 'range'" class="w-full flex justify-between text-xs px-2">
+          <span>0</span>
+          <span>{{ mid || "?" }}</span>
+          <span>{{ mid ? mid * 2 : "?" }}</span>
+          <span>{{ mid ? mid * 3 : "?" }}</span>
+          <span>{{ mid ? mid * 4 : "?" }}</span>
+        </div>
+      </div>
+      <!-- action icons to the right of the input -- provides a dirty feeling -->
+      <div class="text-2xl">
+        <slot name="actionIcon" :isDirty="dirty"></slot>
+      </div>
+      <!-- Email Format Error Message -->
+      <div v-if="!validity" class="text-error italic text-xs text-right">
+        {{ validityMessage }}
       </div>
     </div>
-    <!-- action icons to the right of the input -- provides a dirty feeling -->
-    <div class="text-2xl">
-      <slot name="actionIcon" :isDirty="dirty"></slot>
-    </div>
-    <!-- Email Format Error Message -->
-    <div v-if="!validity" class="text-error italic text-xs text-right">
-      {{ validityMessage }}
-    </div>
-</div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
 
-type AutoComplete =
-  | "off"
-  | "on"
-  | "name"
-  | "given-name"
-  | "additional-name"
-  | "family-name"
-  | "email"
-  | "username"
-  | "new-password"
-  | "current-password"
-  | "one-time-code"
-  | "organization"
-  | "street-address"
-  | "country-name"
-  | "postal-code"
-  | "cc-name"
-  | "cc-number"
-  | "cc-exp"
-  | "cc-csc"
-  | "bday"
-  | "tel"
-  | "tel-national"
-  | "url";
-
-type InputType =
-  | "text"
-  | "password"
-  | "number"
-  | "range"
-  | "date"
-  | "email"
-  | "search" 
-  | "url"
-  | "tel"
-  | "textarea";
-const props = defineProps<{
-  label: string;
-  labelHidden?: boolean;
-  name: string;
-  type: InputType;
-  placeholder?: string;
-  required?: boolean;
-  minlength?: number;
-  maxlength?: number;
-  max?: number;
-  min?: number;
-  step?: number;
-  mid?: number;
-  value?: number | string;
-  disabled?: boolean;
-  autocomplete?: AutoComplete;
-  retype?: boolean;
-  rows?: number;
-  alpha?: boolean;
-  alphanumeric?: boolean;
-}>();
+const props = defineProps({
+  label: {
+    type: String,
+    required: true,
+  },
+  labelHidden: Boolean,
+  name: String,
+  type: {
+    type: String,
+    required: true,
+    validator(v: string) {
+      return [
+        "text",
+        "password",
+        "number",
+        "range",
+        "date",
+        "email",
+        "search",
+        "url",
+        "tel",
+        "textarea",
+      ].includes(v);
+    },
+  },
+  placeholder: String,
+  required: Boolean,
+  minlength: Number,
+  maxlength: Number,
+  max: Number,
+  min: Number,
+  step: Number,
+  mid: Number,
+  value: [Number, String],
+  disabled: Boolean,
+  autocomplete: {
+    type: String,
+    required: false,
+    validator(v: string) {
+      return [
+        "off",
+        "on",
+        "name",
+        "given-name",
+        "additional-name",
+        "family-name",
+        "email",
+        "username",
+        "new-password",
+        "current-password",
+        "one-time-code",
+        "organization",
+        "street-address",
+        "country-name",
+        "postal-code",
+        "cc-name",
+        "cc-number",
+        "cc-exp",
+        "cc-csc",
+        "bday",
+        "tel",
+        "tel-national",
+        "url",
+      ].includes(v);
+    },
+  },
+  retype: {
+    type: Boolean,
+    required: false,
+    default: true,
+  },
+  rows: Number,
+  alpha: Boolean,
+  alphanumeric: Boolean,
+});
 
 // true: valid, false: invalid
 const validity = ref(true);
@@ -152,22 +146,20 @@ const dirty = ref(false);
 const modelValue = defineModel();
 
 async function inputValues(e: InputEvent) {
-if(e.target.value) dirty.value = true
+  if (e.target.value) dirty.value = true;
   debouncedCheckValidity(e);
 }
 
 const debouncedCheckValidity = useDebounceFn((e: InputEvent) => {
-  checkValidity(e)
-}, 375)
+  checkValidity(e);
+}, 375);
 
 async function checkValidity(e: InputEvent) {
-   
-  let newValue = e.target.value
+  let newValue = e.target.value;
   // compare values, then determine if is now dirty.
   const result = e.target.validity;
   let message = "";
 
-  
   /* This sections grabs validity info from HTML5 */
   if (
     result.valid === false ||
@@ -185,40 +177,37 @@ async function checkValidity(e: InputEvent) {
       message = messages[props.type];
   } else {
     message = "";
-    
+
     validity.value = true;
   }
   if (props.required) requiredValidity.value = !result.valueMissing;
   validityMessage.value = message;
 
   /* Add in additional validators - if field is blank do not apply validation */
-  if(e.target.value.length > 0) {
-    if(props.type === 'email') {
-    const {default: isEmail} = await import('validator/es/lib/isEmail.js')
-    if(!isEmail(e.target.value )) {
-      validityMessage.value = messages.email
-      validity.value = false
+  if (e.target.value.length > 0) {
+    if (props.type === "email") {
+      const { default: isEmail } = await import("validator/es/lib/isEmail.js");
+      if (!isEmail(e.target.value)) {
+        validityMessage.value = messages.email;
+        validity.value = false;
+      }
+    }
+    if (props.type === "tel") {
+      if (!e.target.value.match(patterns.phone)) {
+        validityMessage.value = messages.tel;
+        validity.value = false;
+      }
     }
   }
-  if(props.type === 'tel') {
-    if(!e.target.value.match(patterns.phone)) {
-      validityMessage.value = messages.tel;
-      validity.value = false
-    }
-  }
-  }
-  
-
 
   // Remove erroneous characters. If listed props are found on component, corresponding patterns will be applied to the text, cleaned, and emitted to parent component.
-  const textCleaners = ['alpha', 'alphanumeric'];
-  textCleaners.forEach(v => {
-    if(props[v] === true) {
-      newValue = newValue.replace(patterns[v], '')
+  const textCleaners = ["alpha", "alphanumeric"];
+  textCleaners.forEach((v) => {
+    if (props[v] === true) {
+      newValue = newValue.replace(patterns[v], "");
     }
   });
-  
-   
+
   const currentElement = document.getElementById(`${props.name}_${props.type}`);
   const formElement = currentElement?.closest("form")?.id;
   setFormState(formElement, props.name, newValue);
@@ -246,24 +235,24 @@ const messages = {
   // stepMismatch: false,
   tooLong: `${props.name} must be shorter than ${props.maxlength} characters.`,
   tooShort: `${props.name} must be longer than ${props.minlength} characters`,
-  typeMismatch: `${props.name} must be a valid format: ${
-    props.type === "email" ? "user@domain.com" : "Not email?"
-  }`,
+  typeMismatch: `${props.name} must be a valid format: ${props.type === "email" ? "user@domain.com" : "Not email?"
+    }`,
   valid: `${props.name} is invalid.`,
-  valueMissing: `${props.name} is a required field.`
+  valueMissing: `${props.name} is a required field.`,
 };
 
 const patterns = {
-  phone: /^((\+1|1)?( |-)?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})( |-)?([2-9][0-9]{2}( |-)?[0-9]{4})$/,
+  phone:
+    /^((\+1|1)?( |-)?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})( |-)?([2-9][0-9]{2}( |-)?[0-9]{4})$/,
   alpha: /[^a-z ]/gi,
-  alphanumeric: /[^a-z0-9 ]/gi
-}
+  alphanumeric: /[^a-z0-9 ]/gi,
+};
 
-defineExpose({validity, requiredValidity, dirty})
-
+defineExpose({ validity, requiredValidity, dirty });
 </script>
 <style>
-input:user-invalid, textarea:user-invalid {
-@apply invalid:ring-1 invalid:ring-error
+input:user-invalid,
+textarea:user-invalid {
+  @apply invalid:ring-1 invalid:ring-error;
 }
 </style>

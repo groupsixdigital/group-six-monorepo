@@ -4,9 +4,5 @@
   "prettier.jsxSingleQuote": true,
   "prettier.quoteProps": "preserve",
   "prettier.trailingComma": "none",
-  "plugins": [
-    "prettier-plugin-jsdoc",
-    "prettier-plugin-organize-attributes",
-    "prettier-plugin-tailwindcss"
-  ]
+
 }
