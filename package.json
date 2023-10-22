@@ -21,7 +21,6 @@
     "validator": "^13.11.0"
   },
   "devDependencies": {
-    "@nuxt/devtools": "1.0.0-beta.0",
     "@types/node": "^20.8.6",
     "autoprefixer": "^10.4.16",
     "nuxt": "^3.8.0",

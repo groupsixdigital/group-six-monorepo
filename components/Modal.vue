@@ -3,7 +3,8 @@
     <form
       class="modal-box m-8 max-w-[95%]"
       method="dialog"
-      :style="backgroundImage">
+      :style="backgroundImage"
+    >
       <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
         ✕
       </button>
@@ -25,10 +26,10 @@ const backgroundImage = computed(() => {
     "background-image": `url(http://localhost:54321/storage/v1/object/public/images/${props.url})`,
     "background-position": "center",
     "background-size": "contain",
-    "height": "90%",
-    "background-repeat": "no-repeat"
+    height: "90%",
+    "background-repeat": "no-repeat",
   };
 
-  return props.type === "image_preview" ? previewImage : "";
+  return props.type === "image_preview" && props.url ? previewImage : "";
 });
 </script>
