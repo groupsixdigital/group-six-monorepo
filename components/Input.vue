@@ -1,9 +1,17 @@
 <template>
   <div class="form-control">
     <div class="items-center">
-      <label class="label pb-1 pt-0" :class="{ 'sr-only': labelHidden }" :for="name"><span v-text="label" />
-        <span v-if="!requiredValidity" class="text-warning italic text-xs -mb-4">
-          required</span>
+      <label
+        class="label pb-1 pt-0"
+        :class="{ 'sr-only': labelHidden }"
+        :for="name"
+        ><span v-text="label" />
+        <span
+          v-if="!requiredValidity"
+          class="text-warning italic text-xs -mb-4"
+        >
+          required</span
+        >
       </label>
 
       <div class="w-full relative flex items-center">
@@ -12,29 +20,64 @@
           <slot name="icon" />
         </div>
         <!-- Icon: Back side of Input -- clear input -->
-        <div v-if="modelValue && type !== 'number' && type !== 'date'" class="mr-3 absolute right-0 tooltip"
-          data-tip="Clear Input">
-          <span class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
-            @click="$emit('update:modelValue', '')">&#10005;</span>
+        <div
+          v-if="modelValue && type !== 'number' && type !== 'date'"
+          class="mr-3 absolute right-0 tooltip"
+          data-tip="Clear Input"
+        >
+          <span
+            class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
+            @click="$emit('update:modelValue', '')"
+            >&#10005;</span
+          >
         </div>
         <!-- SHOW IF TYPE == TEXT AREA -->
-        <textarea v-if="type === 'textarea'" :name="name" :placeholder="placeholder" :id="`${name}_${type}`"
-          :minlength="minlength" :value="modelValue" :rows="rows" class="textarea textarea-bordered w-full"
-          :required="required" @input="inputValues" :class="{
+        <textarea
+          v-if="type === 'textarea'"
+          :name="name"
+          :placeholder="placeholder"
+          :id="`${name}_${type}`"
+          :minlength="minlength"
+          :value="modelValue"
+          :rows="rows"
+          class="textarea textarea-bordered w-full"
+          :required="required"
+          @input="inputValues"
+          :class="{
             'pl-10': $slots.icon,
             'ring-error ring-1': !validity,
-          }" />
+          }"
+        />
         <!-- ALL STANDARD INPUTS -->
-        <input v-else :type="type" :name="name" :id="`${name}_${type}`" :placeholder="placeholder"
-          class="input input-bordered w-full" :class="{
+        <input
+          v-else
+          :type="type"
+          :name="name"
+          :id="`${name}_${type}`"
+          :placeholder="placeholder"
+          class="input input-bordered w-full"
+          :class="{
             range: type === 'range',
             'pl-10': $slots.icon,
             'ring-error ring-1': !validity,
-          }" :required="required" :minlength="minlength" :max="max" :min="min" :step="step" :disabled="disabled"
-          :pattern="patterns[type] || undefined" :value="modelValue" v-model="modelValue"
-          :autocomplete="autocomplete || 'off'" @input="inputValues" />
+          }"
+          :required="required"
+          :minlength="minlength"
+          :max="max"
+          :min="min"
+          :step="step"
+          :disabled="disabled"
+          :pattern="patterns[type] || undefined"
+          :value="modelValue"
+          v-model="modelValue"
+          :autocomplete="autocomplete || 'off'"
+          @input="inputValues"
+        />
 
-        <div v-if="type === 'range'" class="w-full flex justify-between text-xs px-2">
+        <div
+          v-if="type === 'range'"
+          class="w-full flex justify-between text-xs px-2"
+        >
           <span>0</span>
           <span>{{ mid || "?" }}</span>
           <span>{{ mid ? mid * 2 : "?" }}</span>
@@ -136,7 +179,15 @@ const props = defineProps({
 // true: valid, false: invalid
 const validity = ref(true);
 // true: required field is filled, false: required field is empty
-const requiredValidity = ref(true);
+const requiredValidity = computed(() => {
+  let result = true;
+  if (props.requried) {
+    if (modelValue) {
+      result = true;
+    } else result = false;
+  }
+  return result;
+});
 // message shows if validity == false
 const validityMessage = ref("");
 // TODO: make actual dirty -- currently showing dirty when field is blurred.
@@ -180,8 +231,7 @@ async function checkValidity(e: InputEvent) {
 
     validity.value = true;
   }
-  if (props.required) requiredValidity.value = !result.valueMissing;
-  validityMessage.value = message;
+  if (!requiredValidity) validityMessage.value = message;
 
   /* Add in additional validators - if field is blank do not apply validation */
   if (e.target.value.length > 0) {
@@ -213,16 +263,6 @@ async function checkValidity(e: InputEvent) {
   setFormState(formElement, props.name, newValue);
 }
 
-onMounted(() => {
-  if (
-    props.required &&
-    (props.modelValue === "" ||
-      props.modelValue === undefined ||
-      props.modelValue === null)
-  )
-    requiredValidity.value = false;
-});
-
 const messages = {
   // badInput: false,
   // customError: false,
@@ -235,8 +275,9 @@ const messages = {
   // stepMismatch: false,
   tooLong: `${props.name} must be shorter than ${props.maxlength} characters.`,
   tooShort: `${props.name} must be longer than ${props.minlength} characters`,
-  typeMismatch: `${props.name} must be a valid format: ${props.type === "email" ? "user@domain.com" : "Not email?"
-    }`,
+  typeMismatch: `${props.name} must be a valid format: ${
+    props.type === "email" ? "user@domain.com" : "Not email?"
+  }`,
   valid: `${props.name} is invalid.`,
   valueMissing: `${props.name} is a required field.`,
 };
