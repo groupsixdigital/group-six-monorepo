@@ -182,11 +182,18 @@ const props = defineProps({
 const validity = ref(true);
 // true: required field is filled, false: required field is empty
 const requiredValidity = computed(() => {
-  let result = true;
-  if (props.requried) {
-    if (modelValue) {
+  let result = false;
+  if (props.required) {
+    if (
+      modelValue == "" ||
+      modelValue == null ||
+      modelValue == undefined ||
+      modelValue == 0
+    ) {
       result = true;
     } else result = false;
+  } else {
+    result = true;
   }
   return result;
 });
