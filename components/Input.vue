@@ -294,6 +294,12 @@ const patterns = {
 defineExpose({ validity, requiredValidity, dirty });
 </script>
 <style>
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  display: none;
+}
 input:user-invalid,
 textarea:user-invalid {
   @apply invalid:ring-1 invalid:ring-error;
