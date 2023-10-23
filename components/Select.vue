@@ -12,14 +12,16 @@
       </div>
       <select
         class="select select-bordered w-full capitalize"
-        :required="required">
-        <option value="null" disabled v-text="`Select from ${label}`"></option>
+        :required="required"
+      >
+        <option value="0" disabled v-text="`Select from ${label}`"></option>
         <option
           v-for="(opt, optk) in filteredList"
           :key="`${name}opt${optk}`"
           :value="opt.value"
           v-text="opt.label"
-          class="capitalize" />
+          class="capitalize"
+        />
       </select>
     </div>
   </div>

@@ -49,6 +49,21 @@
               'ring-error ring-1': !validity,
             }"
           />
+          <!-- SHOE IF TYPE == SELECT -->
+          <select
+            v-else-if="type === 'select'"
+            class="select select-bordered w-full capitalize"
+            :required="required"
+          >
+            <option value="0" disabled v-text="`Select from ${label}`"></option>
+            <option
+              v-for="(opt, optk) in filteredList"
+              :key="`${name}opt${optk}`"
+              :value="opt.value"
+              v-text="opt.label"
+              class="capitalize"
+            />
+          </select>
           <!-- ALL STANDARD INPUTS -->
           <input
             v-else
@@ -101,6 +116,7 @@
 
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
+import { StdListItem } from "~~/types/types";
 
 const props = defineProps({
   label: {
@@ -124,6 +140,7 @@ const props = defineProps({
         "url",
         "tel",
         "textarea",
+        "select",
       ].includes(v);
     },
   },
@@ -137,6 +154,19 @@ const props = defineProps({
   mid: Number,
   value: [Number, String],
   disabled: Boolean,
+  data: {
+    required: false,
+    type: Array,
+    default() {
+      let arr = [];
+      arr.push(new StdListItem(0, "", ""));
+      return arr;
+    },
+  },
+  sorted: {
+    required: false,
+    type: Boolean,
+  },
   autocomplete: {
     type: String,
     required: false,
@@ -155,6 +185,9 @@ const props = defineProps({
         "one-time-code",
         "organization",
         "street-address",
+        "address-level1",
+        "address-level2",
+        "address-line1",
         "country-name",
         "postal-code",
         "cc-name",
@@ -271,6 +304,25 @@ async function checkValidity(e: InputEvent) {
   const formElement = currentElement?.closest("form")?.id;
   setFormState(formElement, props.name, newValue);
 }
+
+/** Sorts by data.value if sort boolean is true */
+const filteredList = computed(() => {
+  const arr = props.data;
+  let filtered = [];
+
+  if (props.sorted) {
+    filtered = arr.sort((a, b) => {
+      const x = a.label.toLowerCase();
+      const y = b.label.toLowerCase();
+      if (x < y) return -1;
+      if (x > y) return 1;
+      return 0;
+    });
+  } else {
+    filtered = arr;
+  }
+  return filtered;
+});
 
 const messages = {
   // badInput: false,
