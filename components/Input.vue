@@ -14,80 +14,82 @@
         >
       </label>
 
-      <div class="w-full relative flex items-center">
-        <!-- Icon: Named Slot -- front side of input -->
-        <div class="ml-3 text-2xl absolute">
-          <slot name="icon" />
-        </div>
-        <!-- Icon: Back side of Input -- clear input -->
-        <div
-          v-if="modelValue && type !== 'number' && type !== 'date'"
-          class="mr-3 absolute right-0 tooltip"
-          data-tip="Clear Input"
-        >
-          <span
-            class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
-            @click="$emit('update:modelValue', '')"
-            >&#10005;</span
+      <div class="flex items-center">
+        <div class="w-full relative flex items-center">
+          <!-- Icon: Named Slot -- front side of input -->
+          <div class="ml-3 text-2xl absolute">
+            <slot name="icon" />
+          </div>
+          <!-- Icon: Back side of Input -- clear input -->
+          <div
+            v-if="modelValue && type !== 'number' && type !== 'date'"
+            class="mr-3 absolute right-0 tooltip opacity-50 hover:opacity-100"
+            data-tip="Clear Input"
           >
-        </div>
-        <!-- SHOW IF TYPE == TEXT AREA -->
-        <textarea
-          v-if="type === 'textarea'"
-          :name="name"
-          :placeholder="placeholder"
-          :id="`${name}_${type}`"
-          :minlength="minlength"
-          :value="modelValue"
-          :rows="rows"
-          class="textarea textarea-bordered w-full"
-          :required="required"
-          @input="inputValues"
-          :class="{
-            'pl-10': $slots.icon,
-            'ring-error ring-1': !validity,
-          }"
-        />
-        <!-- ALL STANDARD INPUTS -->
-        <input
-          v-else
-          :type="type"
-          :name="name"
-          :id="`${name}_${type}`"
-          :placeholder="placeholder"
-          class="input input-bordered w-full"
-          :class="{
-            range: type === 'range',
-            'pl-10': $slots.icon,
-            'ring-error ring-1': !validity,
-          }"
-          :required="required"
-          :minlength="minlength"
-          :max="max"
-          :min="min"
-          :step="step"
-          :disabled="disabled"
-          :pattern="patterns[type] || undefined"
-          :value="modelValue"
-          v-model="modelValue"
-          :autocomplete="autocomplete || 'off'"
-          @input="inputValues"
-        />
+            <span
+              class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
+              @click="$emit('update:modelValue', '')"
+              >&#10005;</span
+            >
+          </div>
+          <!-- SHOW IF TYPE == TEXT AREA -->
+          <textarea
+            v-if="type === 'textarea'"
+            :name="name"
+            :placeholder="placeholder"
+            :id="`${name}_${type}`"
+            :minlength="minlength"
+            :value="modelValue"
+            :rows="rows"
+            class="textarea textarea-bordered w-full"
+            :required="required"
+            @input="inputValues"
+            :class="{
+              'pl-10': $slots.icon,
+              'ring-error ring-1': !validity,
+            }"
+          />
+          <!-- ALL STANDARD INPUTS -->
+          <input
+            v-else
+            :type="type"
+            :name="name"
+            :id="`${name}_${type}`"
+            :placeholder="placeholder"
+            class="input input-bordered w-full"
+            :class="{
+              range: type === 'range',
+              'pl-10': $slots.icon,
+              'ring-error ring-1': !validity,
+            }"
+            :required="required"
+            :minlength="minlength"
+            :max="max"
+            :min="min"
+            :step="step"
+            :disabled="disabled"
+            :pattern="patterns[type] || undefined"
+            :value="modelValue"
+            v-model="modelValue"
+            :autocomplete="autocomplete || 'off'"
+            @input="inputValues"
+          />
 
-        <div
-          v-if="type === 'range'"
-          class="w-full flex justify-between text-xs px-2"
-        >
-          <span>0</span>
-          <span>{{ mid || "?" }}</span>
-          <span>{{ mid ? mid * 2 : "?" }}</span>
-          <span>{{ mid ? mid * 3 : "?" }}</span>
-          <span>{{ mid ? mid * 4 : "?" }}</span>
+          <div
+            v-if="type === 'range'"
+            class="w-full flex justify-between text-xs px-2"
+          >
+            <span>0</span>
+            <span>{{ mid || "?" }}</span>
+            <span>{{ mid ? mid * 2 : "?" }}</span>
+            <span>{{ mid ? mid * 3 : "?" }}</span>
+            <span>{{ mid ? mid * 4 : "?" }}</span>
+          </div>
         </div>
-      </div>
-      <!-- action icons to the right of the input -- provides a dirty feeling -->
-      <div class="text-2xl">
-        <slot name="actionIcon" :isDirty="dirty"></slot>
+        <!-- action icons to the right of the input -- provides a dirty feeling -->
+        <div class="text-2xl">
+          <slot name="actionIcon" :isDirty="dirty"></slot>
+        </div>
       </div>
       <!-- Email Format Error Message -->
       <div v-if="!validity" class="text-error italic text-xs text-right">
