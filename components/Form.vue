@@ -36,7 +36,10 @@ const formIsValid = computed(() => {
 
 const formIsDirty = computed(() => {
   if (!props.fields) return false;
-  return props.fields.map((x) => x.dirty).includes(true);
+  return props.fields
+    ?.filter((x) => x != null)
+    .map((x) => x?.dirty)
+    .includes(true);
 });
 
 onNuxtReady(() => {
