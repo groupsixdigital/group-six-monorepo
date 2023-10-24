@@ -7,7 +7,7 @@
         :for="name"
         ><span v-text="label" />
         <span
-          v-if="!requiredValidity"
+          v-if="requiredValidity === false"
           class="text-warning italic text-xs -mb-4"
         >
           required</span
@@ -28,7 +28,6 @@
           >
             <span
               class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
-              @click="$emit('update:modelValue', '')"
               >&#10005;</span
             >
           </div>
@@ -52,10 +51,10 @@
           <!-- SHOE IF TYPE == SELECT -->
           <select
             v-else-if="type === 'select'"
-            class="select select-bordered w-full capitalize"
+            class="select select-bordered w-full capitalize text-base"
             :required="required"
           >
-            <option value="0" disabled v-text="`Select from ${label}`"></option>
+            <option selected value="0" disabled v-text="`Select a ${label}`" />
             <option
               v-for="(opt, optk) in filteredList"
               :key="`${name}opt${optk}`"
@@ -71,7 +70,7 @@
             :name="name"
             :id="`${name}_${type}`"
             :placeholder="placeholder"
-            class="input input-bordered w-full"
+            class="input input-bordered w-full text-base"
             :class="{
               range: type === 'range',
               'pl-10': $slots.icon,
@@ -88,6 +87,7 @@
             v-model="modelValue"
             :autocomplete="autocomplete || 'off'"
             @input="inputValues"
+            @keyup.enter="$emit('submit')"
           />
 
           <div
@@ -118,6 +118,7 @@
 import { useDebounceFn } from "@vueuse/core";
 import { StdListItem } from "~~/types/types";
 
+defineEmits(["submit"]);
 const props = defineProps({
   label: {
     type: String,
@@ -157,11 +158,6 @@ const props = defineProps({
   data: {
     required: false,
     type: Array,
-    default() {
-      let arr = [];
-      arr.push(new StdListItem(0, "", ""));
-      return arr;
-    },
   },
   sorted: {
     required: false,
@@ -215,20 +211,15 @@ const props = defineProps({
 const validity = ref(true);
 // true: required field is filled, false: required field is empty
 const requiredValidity = computed(() => {
-  let result = false;
-  if (props.required) {
-    if (
-      modelValue == "" ||
-      modelValue == null ||
-      modelValue == undefined ||
-      modelValue == 0
-    ) {
-      result = true;
-    } else result = false;
-  } else {
-    result = true;
-  }
-  return result;
+  if (props.required === false) return true;
+  if (
+    modelValue.value !== "" &&
+    modelValue.value !== null &&
+    modelValue.value !== undefined &&
+    modelValue.value !== 0
+  ) {
+    return true;
+  } else return false;
 });
 // message shows if validity == false
 const validityMessage = ref("");
@@ -236,7 +227,7 @@ const validityMessage = ref("");
 const dirty = ref(false);
 
 // v-model
-const modelValue = defineModel();
+const modelValue: string | number = defineModel();
 
 async function inputValues(e: InputEvent) {
   if (e.target.value) dirty.value = true;

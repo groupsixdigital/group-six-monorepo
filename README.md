@@ -7,7 +7,7 @@
 > Required Props
 
 - **name**: string only
-- **fields**: Array of field refs.
+- **fields**: Array of <Input  /> field refs.
 
 > Available Slot Props
 
