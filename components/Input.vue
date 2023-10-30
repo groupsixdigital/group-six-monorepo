@@ -45,7 +45,7 @@
             @input="inputValues"
             :class="{
               'pl-10': $slots.icon,
-              'ring-error ring-1': !validity,
+              'ring-error ring-1': validity ? validity.valid === false : false,
             }"
           />
           <!-- SHOE IF TYPE == SELECT -->
@@ -74,7 +74,7 @@
             :class="{
               range: type === 'range',
               'pl-10': $slots.icon,
-              'ring-error ring-1': !validity,
+              'ring-error ring-1': validity ? validity.valid === false : false,
             }"
             :required="required"
             :minlength="minlength"
@@ -102,13 +102,14 @@
           </div>
         </div>
         <!-- action icons to the right of the input -- provides a dirty feeling -->
-        <div class="text-2xl">
-          <slot name="actionIcon" :isDirty="dirty"></slot>
-        </div>
+        <div class="text-2xl"></div>
       </div>
       <!-- Email Format Error Message -->
-      <div v-if="!validity" class="text-error italic text-xs text-right">
-        {{ validityMessage }}
+      <div
+        v-if="validity?.valid === false"
+        class="text-error italic text-xs text-right"
+      >
+        {{ validity?.message }}
       </div>
     </div>
   </div>
@@ -116,7 +117,6 @@
 
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
-import { StdListItem } from "~~/types/types";
 
 defineEmits(["submit"]);
 const props = defineProps({
@@ -125,7 +125,10 @@ const props = defineProps({
     required: true,
   },
   labelHidden: Boolean,
-  name: String,
+  name: {
+    type: String,
+    required: true,
+  },
   type: {
     type: String,
     required: true,
@@ -207,8 +210,15 @@ const props = defineProps({
   alphanumeric: Boolean,
 });
 
-// true: valid, false: invalid
-const validity = ref(true);
+const validity = ref(null);
+
+onMounted(async () => {
+  const currentElement = document.getElementById(`${props.name}_${props.type}`);
+  const formName = currentElement?.closest("form")?.id;
+  validity.value = await useGetFormState(formName);
+  if (validity.value?.value?.length) modelValue = validity.value.value;
+});
+
 // true: required field is filled, false: required field is empty
 const requiredValidity = computed(() => {
   if (props.required === false) return true;
@@ -221,80 +231,28 @@ const requiredValidity = computed(() => {
     return true;
   } else return false;
 });
-// message shows if validity == false
-const validityMessage = ref("");
-// TODO: make actual dirty -- currently showing dirty when field is blurred.
-const dirty = ref(false);
 
 // v-model
 const modelValue: string | number = defineModel();
 
-async function inputValues(e: InputEvent) {
-  if (e.target.value) dirty.value = true;
-  debouncedCheckValidity(e);
-}
-
-const debouncedCheckValidity = useDebounceFn((e: InputEvent) => {
-  checkValidity(e);
-}, 375);
-
-async function checkValidity(e: InputEvent) {
-  let newValue = e.target.value;
-  // compare values, then determine if is now dirty.
-  const result = e.target.validity;
-  let message = "";
-
-  /* This sections grabs validity info from HTML5 */
-  if (
-    result.valid === false ||
-    (props.retype === false && props.retype !== undefined)
-  ) {
-    validity.value = false;
-
-    if (props.retype === false) validity.value = false;
-
-    if (props.retype === false && props.type === "password")
-      message = messages.retype;
-    else if (result.tooShort) message = messages.tooShort;
-    else if (result.tooLong) message = messages.tooLong;
-    else if (result.patternMismatch || result.typeMismatch)
-      message = messages[props.type];
-  } else {
-    message = "";
-
-    validity.value = true;
-  }
-  if (!requiredValidity) validityMessage.value = message;
-
-  /* Add in additional validators - if field is blank do not apply validation */
-  if (e.target.value.length > 0) {
-    if (props.type === "email") {
-      const { default: isEmail } = await import("validator/es/lib/isEmail.js");
-      if (!isEmail(e.target.value)) {
-        validityMessage.value = messages.email;
-        validity.value = false;
-      }
-    }
-    if (props.type === "tel") {
-      if (!e.target.value.match(patterns.phone)) {
-        validityMessage.value = messages.tel;
-        validity.value = false;
-      }
-    }
-  }
-
-  // Remove erroneous characters. If listed props are found on component, corresponding patterns will be applied to the text, cleaned, and emitted to parent component.
-  const textCleaners = ["alpha", "alphanumeric"];
-  textCleaners.forEach((v) => {
-    if (props[v] === true) {
-      newValue = newValue.replace(patterns[v], "");
-    }
-  });
-
+const inputValues = useDebounceFn(async (e: InputEvent) => {
+  const fieldHTMLValidity = e.target.validity;
   const currentElement = document.getElementById(`${props.name}_${props.type}`);
-  const formElement = currentElement?.closest("form")?.id;
-  setFormState(formElement, props.name, newValue);
-}
+  const formName = currentElement?.closest("form")?.id;
+  if (formName) {
+    validity.value = await useCheckValidity({
+      formName,
+      fieldName: props.name,
+      fieldValue: e.target.value,
+      fieldHTMLValidity,
+      fieldType: props.type,
+      alpha: props.alpha,
+      alphanumeric: props.alphanumeric,
+      min: props.min,
+      max: props.max,
+    });
+  }
+}, 375);
 
 /** Sorts by data.value if sort boolean is true */
 const filteredList = computed(() => {
@@ -315,33 +273,12 @@ const filteredList = computed(() => {
   return filtered;
 });
 
-const messages = {
-  // badInput: false,
-  // customError: false,
-  retype: "Passwords do not match!",
-  email: "Must be a valid email. Example: username@domain.com",
-  tel: "Must be a valid phone number. Example: 555-555-5555",
-  patternMismatch: true,
-  rangeOverflow: `${props.name} must be less than ${props.max}`,
-  rangeUnderflow: `${props.name} must be greater than ${props.min}`,
-  // stepMismatch: false,
-  tooLong: `${props.name} must be shorter than ${props.maxlength} characters.`,
-  tooShort: `${props.name} must be longer than ${props.minlength} characters`,
-  typeMismatch: `${props.name} must be a valid format: ${
-    props.type === "email" ? "user@domain.com" : "Not email?"
-  }`,
-  valid: `${props.name} is invalid.`,
-  valueMissing: `${props.name} is a required field.`,
-};
-
 const patterns = {
   phone:
     /^((\+1|1)?( |-)?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})( |-)?([2-9][0-9]{2}( |-)?[0-9]{4})$/,
-  alpha: /[^a-z ]/gi,
-  alphanumeric: /[^a-z0-9 ]/gi,
 };
 
-defineExpose({ validity, requiredValidity, dirty });
+defineExpose({ validity, requiredValidity });
 </script>
 <style>
 input[type="search"]::-webkit-search-decoration,

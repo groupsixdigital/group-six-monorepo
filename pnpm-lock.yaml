@@ -29,9 +29,6 @@ dependencies:
   uuid:
     specifier: ^9.0.1
     version: 9.0.1
-  valibot:
-    specifier: ^0.19.0
-    version: 0.19.0
   validator:
     specifier: ^13.11.0
     version: 13.11.0
@@ -5555,10 +5552,6 @@ packages:
   /uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
-    dev: false
-
-  /valibot@0.19.0:
-    resolution: {integrity: sha512-vzeuctzVirzoiDN9BTc4GludHaSgFYoy6AnbHOjfBUbX0DibqKuNCr2Ti4ox8eLdBdDSEZSZ3LwXZgjL6aE4RQ==}
     dev: false
 
   /validate-npm-package-license@3.0.4:
