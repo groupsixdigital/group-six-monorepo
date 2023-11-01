@@ -28,12 +28,11 @@
 </template>
 
 <script setup lang="ts">
-import type { StdListItem } from "~~/types/types";
 const props = defineProps<{
   label?: string;
   name: string;
   required?: boolean;
-  data: StdListItem[];
+  data: any;
   sorted?: boolean;
 }>();
 

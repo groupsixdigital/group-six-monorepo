@@ -116,7 +116,6 @@
 
 <script setup lang="ts">
 import { useDebounceFn } from "@vueuse/core";
-import { StdListItem } from "~~/types/types";
 
 defineEmits(["submit"]);
 const props = defineProps({

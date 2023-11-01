@@ -1,10 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   telemetry: false,
-
   typescript: {
-    includeWorkspace: true
+    includeWorkspace: true,
   },
-
-  modules: ["@vueuse/nuxt"]
+  vue: {
+    defineModel: true,
+  },
+  modules: ["@vueuse/nuxt"],
 });
