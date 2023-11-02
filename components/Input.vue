@@ -45,7 +45,9 @@
             @input="inputValues"
             :class="{
               'pl-10': $slots.icon,
-              'ring-error ring-1': validity ? validity.valid === false : false,
+              'ring-error ring-1': inputState
+                ? inputState.valid === false
+                : false,
             }"
           />
           <!-- SHOE IF TYPE == SELECT -->
@@ -74,7 +76,9 @@
             :class="{
               range: type === 'range',
               'pl-10': $slots.icon,
-              'ring-error ring-1': validity ? validity.valid === false : false,
+              'ring-error ring-1': inputState
+                ? inputState.valid === false
+                : false,
             }"
             :required="required"
             :minlength="minlength"
@@ -105,12 +109,15 @@
         <div class="text-2xl"></div>
       </div>
       <!-- Email Format Error Message -->
-      <div
-        v-if="validity?.valid === false"
-        class="text-error italic text-xs text-right"
+      <Transition name="fade"
+        ><div
+          v-if="inputState?.valid === false"
+          :key="`${name}-message`"
+          class="text-error italic text-xs text-right"
+        >
+          {{ inputState?.message }}
+        </div></Transition
       >
-        {{ validity?.message }}
-      </div>
     </div>
   </div>
 </template>
@@ -149,7 +156,10 @@ const props = defineProps({
     },
   },
   placeholder: String,
-  required: Boolean,
+  required: {
+    type: Boolean,
+    default: false,
+  },
   minlength: Number,
   maxlength: Number,
   max: Number,
@@ -158,6 +168,10 @@ const props = defineProps({
   mid: Number,
   value: [Number, String],
   disabled: Boolean,
+  noAutofill: {
+    type: Boolean,
+    default: false,
+  },
   data: {
     required: false,
     type: Array,
@@ -209,14 +223,26 @@ const props = defineProps({
   alpha: Boolean,
   alphanumeric: Boolean,
 });
-
-const validity = ref(null);
-
-onMounted(async () => {
+const formName = shallowRef(null);
+const inputState = computed(() => {
+  if (!props.name || !formName.value) return;
+  const form = formName.value;
+  const field = props.name;
+  return useGetInputState(form, field);
+});
+onMounted(() => {
   const currentElement = document.getElementById(`${props.name}_${props.type}`);
-  const formName = currentElement?.closest("form")?.id;
-  validity.value = await useGetFormState(formName);
-  if (validity.value?.value?.length) modelValue = validity.value.value;
+  formName.value = currentElement?.closest("form")?.id;
+  const result = useGetInputState(formName.value, props.name);
+  if (!props.noAutofill) if (result?.value) modelValue.value = result.value;
+  if (!inputState.value) {
+    setFormState({
+      formName: formName.value,
+      fieldName: props.name,
+      fieldValue: modelValue.value,
+      fieldRequiredValidity: requiredValidity.value,
+    });
+  }
 });
 
 // true: required field is filled, false: required field is empty
@@ -233,23 +259,26 @@ const requiredValidity = computed(() => {
 });
 
 // v-model
-const modelValue: string | number = defineModel();
+const modelValue = defineModel<string | number>();
 
 const inputValues = useDebounceFn(async (e: InputEvent) => {
   const fieldHTMLValidity = e.target.validity;
-  const currentElement = document.getElementById(`${props.name}_${props.type}`);
-  const formName = currentElement?.closest("form")?.id;
-  if (formName) {
-    validity.value = await useCheckValidity({
-      formName,
+  // const currentElement = document.getElementById(`${props.name}_${props.type}`);
+  // const formName = currentElement?.closest("form")?.id;
+  if (formName.value) {
+    useCheckValidity({
+      formName: formName.value,
       fieldName: props.name,
       fieldValue: e.target.value,
       fieldHTMLValidity,
+      required: props.required,
       fieldType: props.type,
       alpha: props.alpha,
       alphanumeric: props.alphanumeric,
       min: props.min,
       max: props.max,
+      minlength: props.minlength,
+      maxlength: props.maxlength,
     });
   }
 }, 375);
@@ -277,8 +306,6 @@ const patterns = {
   phone:
     /^((\+1|1)?( |-)?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})( |-)?([2-9][0-9]{2}( |-)?[0-9]{4})$/,
 };
-
-defineExpose({ validity, requiredValidity });
 </script>
 <style>
 input[type="search"]::-webkit-search-decoration,
@@ -287,8 +314,8 @@ input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration {
   display: none;
 }
-input:user-invalid,
+</style>
+<!-- input:user-invalid,
 textarea:user-invalid {
   @apply invalid:ring-1 invalid:ring-error;
-}
-</style>
+} -->

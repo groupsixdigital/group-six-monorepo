@@ -1,6 +1,6 @@
 <template>
   <form :id="`form_${name}`" :name="`form_${name}`" :action="action">
-    <slot :valid="formIsValid" :dirty="formIsDirty" />
+    <slot :valid="valid" :dirty="dirty" :requiredValidity="requiredValidity" />
   </form>
 </template>
 
@@ -11,15 +11,31 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  fields: Array<FieldsType>,
+  fields: Array,
 });
 
-interface FieldsType {
-  validity: boolean;
-  requiredValidity: boolean;
-  dirty: boolean;
-}
+const formState = computed(() => useGetFormState(props.name));
+const valid = computed(() => {
+  let arr = new Set();
+  formState?.value?.forEach((x: ValidStatisType) => arr.add(x.valid));
+  return !arr.has(false);
+});
+const dirty = computed(() => {
+  let arr = new Set();
+  formState.value?.forEach((x: ValidStatisType) => arr.add(x.dirty));
+  return arr.has(true);
+});
+const requiredValidity = computed(() => {
+  let arr = new Set();
+  formState.value?.forEach((x: ValidStatisType) => arr.add(x.required));
+  return !arr.has(false);
+});
 
-const formIsValid = ref(true);
-const formIsDirty = ref(false);
+interface ValidStatisType {
+  valid: boolean;
+  dirty: boolean;
+  required: boolean;
+  message: string;
+  value: string;
+}
 </script>

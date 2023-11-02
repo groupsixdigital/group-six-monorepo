@@ -7,12 +7,12 @@
 > Required Props
 
 - **name**: string only
-- **fields**: Array of <Input  /> field refs.
 
 > Available Slot Props
 
-- **valid**: boolean - uses provided fields props to show reactive valid/not valid status on form.
-- **dirty**
+- **valid**: boolean - true is valid, false is invalid. Uses Validation Props to validate.
+- **dirty**: boolean - true is dirty, false is untouched.
+- **requiredValidity**: boolean - true is required field is fulfilled, false is required field is NOT fulfilled.
 
 ### `<Input  />`
 
@@ -49,7 +49,15 @@ Each field monitors its own validation using a mixture of HTML with javascript. 
 - **alpha**: boolean - enable alpha only character validation
 - **alphanumeric**: boolean - enable alphanumeric character validation
 
-  
+> Validation Tracking
+
+All form validation is tracked on an global composable with reactive state management: ```formState.ts```
+
+- **useFormState**: Reactive Map() holding forms and fields.
+- **useGetFormState(form_name)**: Returns form object with all fields included.
+- **useGetInputState(form_name,field_name)**: Returns field object with reactive status.
+- **useCheckValidity()**: Performs validity check on input field based on provided Validation Props, and updated state.
+
 > Available Input Types
 
 - text
@@ -68,14 +76,13 @@ Each field monitors its own validation using a mixture of HTML with javascript. 
     <Form  
         name=""
         :fields=[]
-        v-slot={ valid }
+        v-slot={ valid, requiredValidity, dirty }
     >
     <Input
         label="Field Label Text"
         name="[field_name]"
         type="[input_type]"
         v-model="[field_name]"
-        ref="[field_name]Field"
     />
     <button
         @click=login(valid)
@@ -83,9 +90,8 @@ Each field monitors its own validation using a mixture of HTML with javascript. 
     </Form>
 </template>
 <script>
-    const [field_name] = ref("")
-    const [field_name]Field = ref(null)
-    function login(valid) {
+    const [field_name] = ref("") // reactive field values
+    function login(valid, requiredValidity) {
         // valid must be passed from within <Form  />
     }
 </script>

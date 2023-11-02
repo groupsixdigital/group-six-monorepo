@@ -1,16 +1,27 @@
 import isEmail from "validator/es/lib/isEmail";
-const validityState = shallowRef(new Map());
+export const useFormState = () => useState("form", () => new Map());
 
 /**
  * State management for all <Forms validity
- * @param name name of form
+ * @param name name of form. Should be pulled from dom: id="". Will be normalized but name should already include type.
  * @returns global form validity
  */
-function useGetFormState(formName: string) {
-  return validityState.value.get(formName);
+export function useGetFormState(formName: string) {
+  return useFormState().value.get(formNameFormatter(formName));
+}
+
+/**
+ *
+ * @param formName String of form name. Obtain from dom i.e. currentElement.closest()
+ * @param fieldName string name
+ * @returns input object.
+ */
+export function useGetInputState(formName: string, fieldName: string) {
+  return useFormState().value?.get(formNameFormatter(formName))?.get(fieldName);
 }
 
 function formNameFormatter(formName: string) {
+  if (!formName) return;
   if (formName.includes("form_")) return formName;
   else return "form_" + formName;
 }
@@ -22,6 +33,7 @@ interface SetOptions {
   fieldDirty: boolean;
   fieldValue: string | number;
   fieldValidityMessage: string;
+  fieldRequiredValidity: boolean;
 }
 
 /**
@@ -29,27 +41,31 @@ interface SetOptions {
  * @param {SetOptions}
  * @returns NOTHING
  */
-async function setFormState({
+export async function setFormState({
   formName,
   fieldName,
   fieldValidity,
   fieldValidityMessage,
   fieldDirty,
   fieldValue,
+  fieldRequiredValidity,
 }: SetOptions) {
   if (!formName || !fieldName) return;
 
   // always set a valid & dirty status on a field & form
   class statusBuilder {
-    constructor(valid, dirty, value, message) {
-      valid !== undefined && valid !== null
-        ? (this.valid = valid)
-        : (this.valid = true);
-      dirty !== undefined && dirty !== null
-        ? (this.dirty = dirty || false)
-        : (this.dirty = false);
-      if (value !== undefined && value !== null) this.value = value;
-      if (message !== undefined && message !== null) this.message = message;
+    constructor(
+      valid = true,
+      dirty = false,
+      value = "",
+      message = "",
+      required = true
+    ) {
+      this.valid = valid;
+      this.dirty = dirty;
+      this.value = value;
+      this.message = message;
+      this.required = required;
     }
   }
 
@@ -57,15 +73,15 @@ async function setFormState({
     fieldValidity,
     fieldDirty,
     fieldValue,
-    fieldValidityMessage
+    fieldValidityMessage,
+    fieldRequiredValidity
   );
 
   // always sets and updates field in validityState > form
   const fieldMap = new Map().set(fieldName, status);
-  return await validityState.value
-    .set(formNameFormatter(formName), fieldMap)
-    .get(formName)
-    .get(fieldName);
+  if (useFormState().value.has(formName))
+    useFormState().value.get(formName).set(fieldName, status);
+  else useFormState().value.set(formNameFormatter(formName), fieldMap);
 }
 
 /**
@@ -74,7 +90,7 @@ async function setFormState({
  * @returns NOTHING
  */
 function clearFormState(name: string) {
-  validityState.value.delete(`form_name`);
+  useFormState().value.delete(`form_name`);
 }
 
 interface CheckValidityObject {
@@ -89,12 +105,14 @@ interface CheckValidityObject {
   max?: number;
   minlength?: number;
   maxlength?: number;
+  required?: boolean;
 }
-async function useCheckValidity({
+export async function useCheckValidity({
   formName,
   fieldName,
   fieldValue,
   fieldHTMLValidity,
+  required,
   fieldType,
   alpha,
   alphanumeric,
@@ -104,42 +122,54 @@ async function useCheckValidity({
   maxlength,
 }: CheckValidityObject) {
   if (!formName || !fieldName) return;
-  let newValue = fieldValue;
   // DIRTY
-  let dirty = false;
-  if (
-    validityState.value?.get(formName)?.get(fieldName)?.get("value") !==
-    fieldValue
-  )
-    dirty = true;
+  const dirty =
+    useFormState().value?.get(formName)?.get(fieldName)?.value !== fieldValue;
 
   // VALIDITY
   let valid = true;
   let message = undefined;
+  let fieldRequiredValidity = true;
 
-  if (fieldHTMLValidity.tooShort || fieldValue.length < minlength) {
-    message = messages.tooShort;
-    valid = false;
+  // REQUIRED
+  if (required) {
+    if (
+      fieldValue === "" ||
+      fieldValue === null ||
+      fieldValue === 0 ||
+      fieldValue === undefined
+    ) {
+      fieldRequiredValidity = false;
+    }
   }
 
-  if (fieldHTMLValidity.tooLong || fieldValue.length > maxlength) {
-    message = messages.tooLong;
-    valid = false;
+  if (fieldHTMLValidity.tooShort || minlength) {
+    if (fieldValue.length < minlength) {
+      message = messages("tooShort", { fieldName, minlength });
+      valid = false;
+    }
+  }
+
+  if (fieldHTMLValidity.tooLong || maxlength) {
+    if (fieldValue.length > maxlength) {
+      message = messages("tooLong", { fieldName, maxlength });
+      valid = false;
+    }
   }
 
   if (fieldHTMLValidity.patternMismatch || fieldHTMLValidity.typeMismatch) {
-    message = messages[fieldType];
+    message = messages("typeMismatch", { fieldType });
     valid = false;
   }
 
   if (typeof fieldValue === "number") {
     if (fieldValue > max) {
       valid = false;
-      message = messages("tooLong", { fieldName, maxlength });
+      message = messages("rangeOverflow", { fieldName, max });
     }
     if (fieldValue < min) {
       valid = false;
-      message = messages("tooShort", { fieldName, minlength });
+      message = messages("rangeUnderflow", { fieldName, min });
     }
   }
 
@@ -171,6 +201,7 @@ async function useCheckValidity({
     fieldValidityMessage: message,
     fieldDirty: dirty,
     fieldValue,
+    fieldRequiredValidity,
   });
 }
 
@@ -182,11 +213,23 @@ interface MessagesObject {
   minlength?: number;
   fieldType?: string;
 }
+
 function messages(
-  which: string,
+  which:
+    | "retype"
+    | "email"
+    | "tel"
+    | "patternMismatch"
+    | "rangeOverflow"
+    | "rangeUnderflow"
+    | "tooLong"
+    | "tooShort"
+    | "typeMismatch"
+    | "valid"
+    | "valueMissing",
   { fieldName, min, max, maxlength, minlength, fieldType }: MessagesObject
 ) {
-  const catalog = {
+  const messagesCatalog = {
     retype: "Passwords do not match!",
     email: "Must be a valid email. Example: username@domain.com",
     tel: "Must be a valid phone number. Example: 555-555-5555",
@@ -205,7 +248,7 @@ function messages(
     valid: `${fieldName} is invalid.`,
     valueMissing: `${fieldName} is a required field.`,
   };
-  return catalog[which] as string;
+  return messagesCatalog[which] as string;
 }
 
 const patterns = {
@@ -214,5 +257,3 @@ const patterns = {
   alpha: /[^a-z ]/gi,
   alphanumeric: /[^a-z0-9 ]/gi,
 };
-
-export { useGetFormState, setFormState, clearFormState, useCheckValidity };
