@@ -96,3 +96,35 @@ All form validation is tracked on an global composable with reactive state manag
     }
 </script>
 ```
+
+# Icons
+
+
+- Close X: &#9587;
+- Medium Close: &#10005;
+- Fat Close X: &times;
+- Plus: &plus;
+- Fat Plus: &#10010;
+- Check mark: &check;
+- Edit: &#9998;
+- Open Star: &star;
+- Closed Star: &starf;
+- Left Quote: &#10077;
+- Right Quote: &#10078;
+- Left Chevron: &#10094;
+- Right Chevron: &#10095;
+- Copyright: &copy;
+- at: &commat;
+- Tel: &#8481;
+- Sun: &#9728;
+- Moon: &#9789;
+- Dollar: &dollar;
+- Hamburger: &#9776;
+- Refresh: &#8634;
+- List Icon: &#9868;
+- Grid Icon: &#10070; -- Must rotate 45 Degrees
+- Search: &#9740; -- Must rotate 110 Degrees
+- Sad Face: &#9785;
+- Flag Filled: &#9873;
+- Alert Triangle: &#9888;
+- Copyright: &copy;
