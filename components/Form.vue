@@ -10,6 +10,7 @@ const props = defineProps({
   name: {
     type: String,
     required: true,
+    default: () => Math.random().toString(36).substring(4),
   },
   fields: Array,
 });
