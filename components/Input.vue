@@ -76,13 +76,22 @@
             :id="`${name}_${type}`"
             :placeholder="placeholder"
             class="input input-bordered w-full text-base placeholder:text-base-content/40 placeholder:italic"
-            :class="{
-              range: type === 'range',
-              'pl-10': $slots.icon,
-              'ring-error ring-1': inputState
-                ? inputState.valid === false
-                : false,
-            }"
+            :class="[
+              {
+                range: type === 'range',
+                'pl-10': $slots.icon,
+                'ring-error ring-1': inputState
+                  ? inputState.valid === false
+                  : false,
+              },
+              size === 'lg'
+                ? 'input-lg'
+                : size === 'sm'
+                ? 'input-sm'
+                : size === 'xs'
+                ? 'input-xs'
+                : 'input-md',
+            ]"
             :required="required"
             :minlength="minlength"
             :max="max"
@@ -129,7 +138,83 @@
 import { useDebounceFn } from "@vueuse/core";
 
 defineEmits(["submit"]);
-const props = defineProps({
+type InputTypes =
+  | "text"
+  | "password"
+  | "number"
+  | "range"
+  | "date"
+  | "email"
+  | "search"
+  | "url"
+  | "tel"
+  | "textarea"
+  | "select";
+type InputSizes = "lg" | "md" | "sm" | "xs";
+type InputAutcompletes =
+  | "off"
+  | "on"
+  | "name"
+  | "given-name"
+  | "additional-name"
+  | "family-name"
+  | "email"
+  | "username"
+  | "new-password"
+  | "current-password"
+  | "one-time-code"
+  | "organization"
+  | "street-address"
+  | "address-level1"
+  | "address-level2"
+  | "address-line1"
+  | "country-name"
+  | "postal-code"
+  | "cc-name"
+  | "cc-number"
+  | "cc-exp"
+  | "cc-csc"
+  | "bday"
+  | "tel"
+  | "tel-national"
+  | "url"
+  | "false";
+
+const props = withDefaults(
+  defineProps<{
+    label: string;
+    labelHidden?: boolean;
+    labelFloat?: boolean;
+    name: string;
+    type: InputTypes;
+    size?: InputSizes;
+    placeholder?: string;
+    required?: boolean;
+    minlength?: number;
+    maxlength?: number;
+    min?: number;
+    max?: number;
+    step?: number;
+    mid?: number;
+    value?: number | string;
+    disabled?: boolean;
+    noAutofill?: boolean;
+    data?: any; // WTF?
+    sorted?: boolean;
+    autocomplete: InputAutcompletes;
+    retype?: boolean;
+    rows?: number;
+    alpha?: boolean;
+    alphanumeric?: boolean;
+  }>(),
+  {
+    name: () => Math.random().toString(36).substring(4),
+    required: () => false,
+    noAutofill: () => false,
+    retype: () => true,
+  }
+);
+const moreProps = {
   label: {
     type: String,
     required: true,
@@ -144,20 +229,12 @@ const props = defineProps({
   type: {
     type: String,
     required: true,
+  },
+  size: {
+    type: String,
+    required: false,
     validator(v: string) {
-      return [
-        "text",
-        "password",
-        "number",
-        "range",
-        "date",
-        "email",
-        "search",
-        "url",
-        "tel",
-        "textarea",
-        "select",
-      ].includes(v);
+      return ["lg", "md", "sm", "xs"].includes(v);
     },
   },
   placeholder: String,
@@ -227,7 +304,7 @@ const props = defineProps({
   rows: Number,
   alpha: Boolean,
   alphanumeric: Boolean,
-});
+};
 const formName = shallowRef(null);
 const inputState = computed(() => {
   if (!props.name || !formName.value) return;
@@ -267,14 +344,15 @@ const requiredValidity = computed(() => {
 const modelValue = defineModel<string | number>();
 
 const inputValues = useDebounceFn(async (e: InputEvent) => {
-  const fieldHTMLValidity = e.target.validity;
+  const target = e.target as HTMLInputElement;
+  const fieldHTMLValidity = target.validity;
   // const currentElement = document.getElementById(`${props.name}_${props.type}`);
   // const formName = currentElement?.closest("form")?.id;
   if (formName.value) {
     useCheckValidity({
       formName: formName.value,
       fieldName: props.name,
-      fieldValue: e.target.value,
+      fieldValue: target.value,
       fieldHTMLValidity,
       required: props.required,
       fieldType: props.type,
