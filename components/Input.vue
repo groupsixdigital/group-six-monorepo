@@ -1,9 +1,12 @@
 <template>
   <div class="form-control">
-    <div class="items-center">
+    <div class="items-center" :class="{ 'mt-4': labelFloat }">
       <label
-        class="label pb-1 pt-0"
-        :class="{ 'sr-only': labelHidden }"
+        class="pb-1 pt-0"
+        :class="[
+          { 'sr-only': labelHidden },
+          labelFloat ? 'floated-label ' : 'label',
+        ]"
         :for="name"
         ><span v-text="label" />
         <span
@@ -72,7 +75,7 @@
             :name="name"
             :id="`${name}_${type}`"
             :placeholder="placeholder"
-            class="input input-bordered w-full text-base"
+            class="input input-bordered w-full text-base placeholder:text-base-content/40 placeholder:italic"
             :class="{
               range: type === 'range',
               'pl-10': $slots.icon,
@@ -132,9 +135,11 @@ const props = defineProps({
     required: true,
   },
   labelHidden: Boolean,
+  labelFloat: Boolean,
   name: {
     type: String,
     required: true,
+    default: () => Math.random().toString(36).substring(4),
   },
   type: {
     type: String,
@@ -313,6 +318,10 @@ input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration {
   display: none;
+}
+
+.floated-label {
+  @apply text-xs tracking-wide -translate-y-2 translate-x-4 absolute z-10 bg-base-100 px-1 py-0;
 }
 </style>
 <!-- input:user-invalid,
