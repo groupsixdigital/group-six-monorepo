@@ -17,7 +17,7 @@
         >
       </label>
 
-      <div class="flex items-center">
+      <div class="flex items-center gap-1">
         <div class="w-full relative flex items-center">
           <!-- Icon: Named Slot -- front side of input -->
           <div class="ml-3 text-2xl absolute">
@@ -117,8 +117,9 @@
             <span>{{ mid ? mid * 4 : "?" }}</span>
           </div>
         </div>
-        <!-- action icons to the right of the input -- provides a dirty feeling -->
-        <div class="text-2xl"></div>
+        <div v-if="$slots.action">
+          <slot name="action" />
+        </div>
       </div>
       <!-- Email Format Error Message -->
       <Transition name="fade"
