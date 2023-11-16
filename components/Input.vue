@@ -28,6 +28,11 @@
             v-if="modelValue && type !== 'number' && type !== 'date'"
             class="mr-3 absolute right-0 tooltip opacity-50 hover:opacity-100"
             data-tip="Clear Input"
+            @click="
+              typeof modelValue === 'number'
+                ? (modelValue = 0)
+                : (modelValue = '')
+            "
           >
             <span
               class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
@@ -41,7 +46,7 @@
             :placeholder="placeholder"
             :id="`${name}_${type}`"
             :minlength="minlength"
-            :value="modelValue"
+            v-model="modelValue"
             :rows="rows"
             class="textarea textarea-bordered w-full"
             :required="required"
@@ -99,7 +104,6 @@
             :step="step"
             :disabled="disabled"
             :pattern="patterns[type] || undefined"
-            :value="modelValue"
             v-model="modelValue"
             :autocomplete="autocomplete || 'off'"
             @input="inputValues"
@@ -139,6 +143,7 @@
 import { useDebounceFn } from "@vueuse/core";
 
 defineEmits(["submit"]);
+
 type InputTypes =
   | "text"
   | "password"
@@ -215,97 +220,6 @@ const props = withDefaults(
     retype: () => true,
   }
 );
-const moreProps = {
-  label: {
-    type: String,
-    required: true,
-  },
-  labelHidden: Boolean,
-  labelFloat: Boolean,
-  name: {
-    type: String,
-    required: true,
-    default: () => Math.random().toString(36).substring(4),
-  },
-  type: {
-    type: String,
-    required: true,
-  },
-  size: {
-    type: String,
-    required: false,
-    validator(v: string) {
-      return ["lg", "md", "sm", "xs"].includes(v);
-    },
-  },
-  placeholder: String,
-  required: {
-    type: Boolean,
-    default: false,
-  },
-  minlength: Number,
-  maxlength: Number,
-  max: Number,
-  min: Number,
-  step: Number,
-  mid: Number,
-  value: [Number, String],
-  disabled: Boolean,
-  noAutofill: {
-    type: Boolean,
-    default: false,
-  },
-  data: {
-    required: false,
-    type: Array,
-  },
-  sorted: {
-    required: false,
-    type: Boolean,
-  },
-  autocomplete: {
-    type: String,
-    required: false,
-    validator(v: string) {
-      return [
-        "off",
-        "on",
-        "name",
-        "given-name",
-        "additional-name",
-        "family-name",
-        "email",
-        "username",
-        "new-password",
-        "current-password",
-        "one-time-code",
-        "organization",
-        "street-address",
-        "address-level1",
-        "address-level2",
-        "address-line1",
-        "country-name",
-        "postal-code",
-        "cc-name",
-        "cc-number",
-        "cc-exp",
-        "cc-csc",
-        "bday",
-        "tel",
-        "tel-national",
-        "url",
-      ].includes(v);
-    },
-  },
-  retype: {
-    type: Boolean,
-    required: false,
-    default: true,
-  },
-  rows: Number,
-  alpha: Boolean,
-  alphanumeric: Boolean,
-};
 const formName = shallowRef(null);
 const inputState = computed(() => {
   if (!props.name || !formName.value) return;
