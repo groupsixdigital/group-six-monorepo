@@ -5,10 +5,17 @@
         class="pb-1 pt-0"
         :class="[
           { 'sr-only': labelHidden },
-          labelFloat ? 'floated-label ' : 'label',
+          labelFloat ? 'floated-label flex gap-4' : 'label',
         ]"
         :for="name"
         ><span v-text="label" />
+        <span v-if="maxlength" class="text-xs"
+          ><span
+            :class="{ 'text-error': modelValue.length > maxlength }"
+            v-text="modelValue.length"
+          />
+          / {{ maxlength }}</span
+        >
         <span
           v-if="requiredValidity === false"
           class="text-warning italic text-xs -mb-4"

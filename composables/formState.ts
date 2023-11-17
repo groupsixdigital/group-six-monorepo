@@ -89,8 +89,10 @@ export async function setFormState({
  * @param formName string ID of <Form name=?>
  * @returns NOTHING
  */
-function clearFormState(name: string) {
-  useFormState().value.delete(`form_name`);
+export function clearFormState(name: string) {
+  console.log(useFormState().value);
+  useFormState().value.delete(formNameFormatter(name));
+  console.log(useFormState().value);
 }
 
 interface CheckValidityObject {
