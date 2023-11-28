@@ -1,4 +1,4 @@
 {
   // https://v3.nuxtjs.org/concepts/typescript
-  "extends": ["../../apps/mulch-enterprises/.nuxt/tsconfig.json", "../../apps/auction-platform/.nuxt/tsconfig.json", "./.nuxt/tsconfig.json"]
+  "extends": ["../../apps/mulch-enterprises/.nuxt/tsconfig.json", "../../apps/auction-platform/.nuxt/tsconfig.json", "../../apps/group-six-cms/.nuxt/tsconfig.json", "./.nuxt/tsconfig.json"]
 }

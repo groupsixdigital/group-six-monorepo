@@ -4,6 +4,13 @@ export default defineNuxtConfig({
   typescript: {
     includeWorkspace: true,
   },
+  devtools: {
+    enabled: true,
+
+    timeline: {
+      enabled: true,
+    },
+  },
   vue: {
     defineModel: true,
   },
