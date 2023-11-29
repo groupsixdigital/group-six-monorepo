@@ -227,6 +227,7 @@ const props = withDefaults(
     rows?: number;
     alpha?: boolean;
     alphanumeric?: boolean;
+    nostate?: boolean;
   }>(),
   {
     name: () => Math.random().toString(36).substring(4),
@@ -243,6 +244,7 @@ const inputState = computed(() => {
   return useGetInputState(form, field);
 });
 onMounted(() => {
+  if (props.nostate) return;
   const currentElement = document.getElementById(`${props.name}_${props.type}`);
   formName.value = currentElement?.closest("form")?.id;
   if (formName.value) {

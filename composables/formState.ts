@@ -192,8 +192,8 @@ export async function useCheckValidity({
   // Password Retype
 
   // Remove erroneous characters.
-  if (alpha) newValue = fieldValue.replace(patterns.alpha, "");
-  if (alphanumeric) newValue = fieldValue.replace(patterns.alphanumeric, "");
+  if (alpha) fieldValue = fieldValue.replace(patterns.alpha, "");
+  if (alphanumeric) fieldValue = fieldValue.replace(patterns.alphanumeric, "");
 
   // Finally
   return await setFormState({
