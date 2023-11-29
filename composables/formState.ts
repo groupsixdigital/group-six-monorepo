@@ -29,11 +29,11 @@ function formNameFormatter(formName: string) {
 interface SetOptions {
   formName: string;
   fieldName: string;
-  fieldValidity: boolean;
-  fieldDirty: boolean;
-  fieldValue: string | number;
-  fieldValidityMessage: string;
-  fieldRequiredValidity: boolean;
+  fieldValidity?: boolean;
+  fieldDirty?: boolean;
+  fieldValue?: string | number;
+  fieldValidityMessage?: string;
+  fieldRequiredValidity?: boolean;
 }
 
 /**
@@ -41,7 +41,7 @@ interface SetOptions {
  * @param {SetOptions}
  * @returns NOTHING
  */
-export async function setFormState({
+export function setFormState({
   formName,
   fieldName,
   fieldValidity,
@@ -59,7 +59,7 @@ export async function setFormState({
       dirty = false,
       value = "",
       message = "",
-      required = true
+      required = true,
     ) {
       this.valid = valid;
       this.dirty = dirty;
@@ -74,7 +74,7 @@ export async function setFormState({
     fieldDirty,
     fieldValue,
     fieldValidityMessage,
-    fieldRequiredValidity
+    fieldRequiredValidity,
   );
 
   // always sets and updates field in validityState > form
@@ -229,7 +229,7 @@ function messages(
     | "typeMismatch"
     | "valid"
     | "valueMissing",
-  { fieldName, min, max, maxlength, minlength, fieldType }: MessagesObject
+  { fieldName, min, max, maxlength, minlength, fieldType }: MessagesObject,
 ) {
   const messagesCatalog = {
     retype: "Passwords do not match!",

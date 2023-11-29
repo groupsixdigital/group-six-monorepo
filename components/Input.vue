@@ -1,8 +1,9 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div class="form-control">
     <div class="items-center" :class="{ 'mt-4': labelFloat }">
       <label
-        class="pb-1 pt-0"
+        class="pt-0 pb-1"
         :class="[
           { 'sr-only': labelHidden },
           labelFloat ? 'floated-label flex gap-4' : 'label',
@@ -11,29 +12,33 @@
         ><span v-text="label" />
         <span v-if="maxlength" class="text-xs"
           ><span
-            :class="{ 'text-error': modelValue.length > maxlength }"
-            v-text="modelValue.length"
+            :class="{
+              'text-error':
+                typeof modelValue === 'string' &&
+                modelValue?.length > maxlength,
+            }"
+            v-text="typeof modelValue === 'string' ? modelValue.length : 0"
           />
           / {{ maxlength }}</span
         >
         <span
           v-if="requiredValidity === false"
-          class="text-warning italic text-xs -mb-4"
+          class="-mb-4 text-xs italic text-warning"
         >
           required</span
         >
       </label>
 
       <div class="flex items-center gap-1">
-        <div class="w-full relative flex items-center">
+        <div class="relative flex items-center w-full">
           <!-- Icon: Named Slot -- front side of input -->
-          <div class="ml-3 text-2xl absolute">
+          <div class="absolute ml-3 text-2xl">
             <slot name="icon" />
           </div>
           <!-- Icon: Back side of Input -- clear input -->
           <div
             v-if="modelValue && type !== 'number' && type !== 'date'"
-            class="mr-3 absolute right-0 tooltip opacity-50 hover:opacity-100"
+            class="absolute right-0 mr-3 opacity-50 tooltip tooltip-left hover:opacity-100"
             data-tip="Clear Input"
             @click="
               typeof modelValue === 'number'
@@ -42,33 +47,35 @@
             "
           >
             <span
-              class="h-6 w-6 text-lg text-neutral-content hover:text-error cursor-pointer"
+              class="w-6 h-6 text-lg cursor-pointer text-neutral-content hover:text-error"
               >&#10005;</span
             >
           </div>
-          <!-- SHOW IF TYPE == TEXT AREA -->
+          <!-- SHOW IF TYPE == TEXTAREA -->
           <textarea
             v-if="type === 'textarea'"
+            :id="`${name}_${type}`"
+            v-model="modelValue"
             :name="name"
             :placeholder="placeholder"
-            :id="`${name}_${type}`"
             :minlength="minlength"
-            v-model="modelValue"
             :rows="rows"
-            class="textarea textarea-bordered w-full"
+            class="w-full textarea textarea-bordered"
             :required="required"
-            @input="inputValues"
+            v-bind="$attrs"
             :class="{
               'pl-10': $slots.icon,
               'ring-error ring-1': inputState
                 ? inputState.valid === false
                 : false,
             }"
+            @input="inputValues"
           />
-          <!-- SHOE IF TYPE == SELECT -->
+          <!-- SHOW IF TYPE == SELECT -->
           <select
             v-else-if="type === 'select'"
-            class="select select-bordered w-full capitalize text-base"
+            class="w-full text-base capitalize select select-bordered"
+            v-bind="$attrs"
             :required="required"
           >
             <option selected value="0" disabled v-text="`Select a ${label}`" />
@@ -76,18 +83,20 @@
               v-for="(opt, optk) in filteredList"
               :key="`${name}opt${optk}`"
               :value="opt.value"
-              v-text="opt.label"
               class="capitalize"
+              v-text="opt.label"
             />
           </select>
           <!-- ALL STANDARD INPUTS -->
           <input
             v-else
+            :id="`${name}_${type}`"
+            v-model="modelValue"
             :type="type"
             :name="name"
-            :id="`${name}_${type}`"
+            v-bind="$attrs"
             :placeholder="placeholder"
-            class="input input-bordered w-full text-base placeholder:text-base-content/40 placeholder:italic"
+            class="w-full text-base input input-bordered placeholder:text-base-content/40 placeholder:italic"
             :class="[
               {
                 range: type === 'range',
@@ -110,8 +119,7 @@
             :min="min"
             :step="step"
             :disabled="disabled"
-            :pattern="patterns[type] || undefined"
-            v-model="modelValue"
+            :pattern="patterns[type]"
             :autocomplete="autocomplete || 'off'"
             @input="inputValues"
             @keyup.enter="$emit('submit')"
@@ -119,7 +127,7 @@
 
           <div
             v-if="type === 'range'"
-            class="w-full flex justify-between text-xs px-2"
+            class="flex justify-between w-full px-2 text-xs"
           >
             <span>0</span>
             <span>{{ mid || "?" }}</span>
@@ -137,7 +145,7 @@
         ><div
           v-if="inputState?.valid === false"
           :key="`${name}-message`"
-          class="text-error italic text-xs text-right"
+          class="text-xs italic text-right text-error"
         >
           {{ inputState?.message }}
         </div></Transition
@@ -225,9 +233,9 @@ const props = withDefaults(
     required: () => false,
     noAutofill: () => false,
     retype: () => true,
-  }
+  },
 );
-const formName = shallowRef(null);
+const formName = shallowRef<string | undefined>(undefined);
 const inputState = computed(() => {
   if (!props.name || !formName.value) return;
   const form = formName.value;
@@ -237,15 +245,17 @@ const inputState = computed(() => {
 onMounted(() => {
   const currentElement = document.getElementById(`${props.name}_${props.type}`);
   formName.value = currentElement?.closest("form")?.id;
-  const result = useGetInputState(formName.value, props.name);
-  if (!props.noAutofill) if (result?.value) modelValue.value = result.value;
-  if (!inputState.value) {
-    setFormState({
-      formName: formName.value,
-      fieldName: props.name,
-      fieldValue: modelValue.value,
-      fieldRequiredValidity: requiredValidity.value,
-    });
+  if (formName.value) {
+    const result = useGetInputState(formName.value, props.name);
+    if (!props.noAutofill) if (result?.value) modelValue.value = result.value;
+    if (!inputState.value) {
+      setFormState({
+        formName: formName.value,
+        fieldName: props.name,
+        fieldValue: modelValue.value,
+        fieldRequiredValidity: requiredValidity.value,
+      });
+    }
   }
 });
 
@@ -263,9 +273,11 @@ const requiredValidity = computed(() => {
 });
 
 // v-model
-const modelValue = defineModel<string | number>();
+const modelValue = defineModel<string | number>({
+  default: () => (props.type === "number" ? 0 : ""),
+});
 
-const inputValues = useDebounceFn(async (e: InputEvent) => {
+const inputValues = useDebounceFn((e: Event) => {
   const target = e.target as HTMLInputElement;
   const fieldHTMLValidity = target.validity;
   // const currentElement = document.getElementById(`${props.name}_${props.type}`);
@@ -294,7 +306,7 @@ const filteredList = computed(() => {
   let filtered = [];
 
   if (props.sorted) {
-    filtered = arr.sort((a, b) => {
+    filtered = arr.sort((a: any, b: any) => {
       const x = a.label.toLowerCase();
       const y = b.label.toLowerCase();
       if (x < y) return -1;
@@ -307,7 +319,7 @@ const filteredList = computed(() => {
   return filtered;
 });
 
-const patterns = {
+const patterns: { [key: string]: RegExp | string } = {
   phone:
     /^((\+1|1)?( |-)?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})( |-)?([2-9][0-9]{2}( |-)?[0-9]{4})$/,
 };
