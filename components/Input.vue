@@ -37,7 +37,9 @@
           </div>
           <!-- Icon: Back side of Input -- clear input -->
           <div
-            v-if="modelValue && type !== 'number' && type !== 'date'"
+            v-if="
+              modelValue && type !== 'number' && type !== 'date' && !disabled
+            "
             class="absolute right-0 mr-3 opacity-50 tooltip tooltip-left hover:opacity-100"
             data-tip="Clear Input"
             @click="
@@ -108,10 +110,10 @@
               size === 'lg'
                 ? 'input-lg'
                 : size === 'sm'
-                ? 'input-sm'
-                : size === 'xs'
-                ? 'input-xs'
-                : 'input-md',
+                  ? 'input-sm'
+                  : size === 'xs'
+                    ? 'input-xs'
+                    : 'input-md',
             ]"
             :required="required"
             :minlength="minlength"
@@ -171,6 +173,19 @@ type InputTypes =
   | "tel"
   | "textarea"
   | "select";
+const inputTypes = [
+  "text",
+  "password",
+  "number",
+  "range",
+  "date",
+  "email",
+  "search",
+  "url",
+  "tel",
+  "textarea",
+  "select",
+];
 type InputSizes = "lg" | "md" | "sm" | "xs";
 type InputAutcompletes =
   | "off"
@@ -220,7 +235,8 @@ const props = withDefaults(
     value?: number | string;
     disabled?: boolean;
     noAutofill?: boolean;
-    data?: any; // WTF?
+    data?: any; // TODO: Do i need to rename this to "list" so it makes sense? <select></select>
+    useDefaultTypes?: boolean; // Use types listed in InputTypes
     sorted?: boolean;
     autocomplete: InputAutcompletes;
     retype?: boolean;
@@ -304,7 +320,13 @@ const inputValues = useDebounceFn((e: Event) => {
 
 /** Sorts by data.value if sort boolean is true */
 const filteredList = computed(() => {
-  const arr = props.data;
+  const typesArray = [];
+  if (props.useDefaultTypes) {
+    for (const type of inputTypes) {
+      typesArray.push({ label: type, value: type });
+    }
+  }
+  const arr = props.useDefaultTypes ? typesArray : props.data;
   let filtered = [];
 
   if (props.sorted) {
