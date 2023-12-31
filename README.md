@@ -33,6 +33,7 @@ Basic client size sanitization is done with selected props on the input element 
 - **disabled**: boolean
 - **autocomplete**: choose from list of supported autocomplete options. See WC3
 - **retype**: boolean - use for password verification. Must match password field.
+- **help**: string - use for hover help text.
 
 > Validation Props
 

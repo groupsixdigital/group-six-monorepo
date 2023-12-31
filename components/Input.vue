@@ -138,10 +138,24 @@
             <span>{{ mid ? mid * 4 : "?" }}</span>
           </div>
         </div>
+
         <div v-if="$slots.action">
           <slot name="action" />
         </div>
       </div>
+      <!-- Help Prop -->
+      <div v-if="help" class="w-full text-right">
+        <p
+          class="mr-4 text-xs text-gray-700 cursor-help tooltip tooltip-left"
+          :class="{
+            'absolute -translate-y-2 right-4 bg-base-100 px-1 ': labelFloat,
+          }"
+          :data-tip="help"
+        >
+          help
+        </p>
+      </div>
+
       <!-- Email Format Error Message -->
       <Transition name="fade"
         ><div
@@ -244,12 +258,14 @@ const props = withDefaults(
     alpha?: boolean;
     alphanumeric?: boolean;
     nostate?: boolean;
+    help?: string;
   }>(),
   {
     name: () => Math.random().toString(36).substring(4),
     required: () => false,
     noAutofill: () => false,
     retype: () => true,
+    help: "",
   },
 );
 const formName = shallowRef<string | undefined>(undefined);
