@@ -97,6 +97,32 @@ All form validation is tracked on an global composable with reactive state manag
 </script>
 ```
 
+### `<TheToastContainer  />` Toasts
+
+Place the ```<TheToastContainer  />``` on app.vue
+
+Activate a toast with ```newToast(type,options)```
+
+> type: ToastTypes
+
+- success
+- error
+- warning
+- info
+
+> Options: Toast
+
+-  id?: uuid; ```Automatically Generated```
+-  title?: string;
+-  message: string;
+-  type: ToastTypes;
+-  autoClose?: boolean; ```True/False```
+-  duration?: number; ```In Seconds```
+-  icon?: string; ```Use HTML Entities here```
+
+
+
+
 # Icons
 
 

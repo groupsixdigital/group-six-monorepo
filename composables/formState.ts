@@ -31,7 +31,7 @@ interface SetOptions {
   fieldName: string;
   fieldValidity?: boolean;
   fieldDirty?: boolean;
-  fieldValue?: string | number;
+  fieldValue?: string | number | undefined;
   fieldValidityMessage?: string;
   fieldRequiredValidity?: boolean;
 }
@@ -53,7 +53,13 @@ export function setFormState({
   if (!formName || !fieldName) return;
 
   // always set a valid & dirty status on a field & form
-  class statusBuilder {
+  class StatusBuilder {
+    valid: boolean;
+    dirty: boolean;
+    value: string | number | undefined;
+    message: string;
+    required: boolean;
+
     constructor(
       valid = true,
       dirty = false,
@@ -69,7 +75,7 @@ export function setFormState({
     }
   }
 
-  const status = new statusBuilder(
+  const status = new StatusBuilder(
     fieldValidity,
     fieldDirty,
     fieldValue,
@@ -90,9 +96,7 @@ export function setFormState({
  * @returns NOTHING
  */
 export function clearFormState(name: string) {
-  console.log(useFormState().value);
   useFormState().value.delete(formNameFormatter(name));
-  console.log(useFormState().value);
 }
 
 interface CheckValidityObject {
