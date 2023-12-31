@@ -76,9 +76,14 @@
           <!-- SHOW IF TYPE == SELECT -->
           <select
             v-else-if="type === 'select'"
+            :id="`${name}_${type}`"
+            v-model="modelValue"
+            :name="name"
             class="w-full text-base capitalize select select-bordered"
             v-bind="$attrs"
             :required="required"
+            :disabled="disabled"
+            @input="inputValues"
           >
             <option selected value="0" disabled v-text="`Select a ${label}`" />
             <option
@@ -249,7 +254,7 @@ const props = withDefaults(
     value?: number | string;
     disabled?: boolean;
     noAutofill?: boolean;
-    data?: any; // TODO: Do i need to rename this to "list" so it makes sense? <select></select>
+    list?: any;
     useDefaultTypes?: boolean; // Use types listed in InputTypes
     sorted?: boolean;
     autocomplete: InputAutcompletes;
@@ -312,8 +317,10 @@ const modelValue = defineModel<string | number>({
 });
 
 const inputValues = useDebounceFn((e: Event) => {
+  // ! Fix select not checking validity. Start with Required.
   const target = e.target as HTMLInputElement;
   const fieldHTMLValidity = target.validity;
+
   // const currentElement = document.getElementById(`${props.name}_${props.type}`);
   // const formName = currentElement?.closest("form")?.id;
   if (formName.value) {
@@ -342,7 +349,7 @@ const filteredList = computed(() => {
       typesArray.push({ label: type, value: type });
     }
   }
-  const arr = props.useDefaultTypes ? typesArray : props.data;
+  const arr = props.useDefaultTypes ? typesArray : props.list;
   let filtered = [];
 
   if (props.sorted) {

@@ -26,7 +26,10 @@ const props = defineProps({
 const formState = computed(() => useGetFormState(props.name));
 const valid = computed(() => {
   const arr = new Set();
-  formState?.value?.forEach((x: ValidStatisType) => arr.add(x.valid));
+  formState?.value?.forEach((x: ValidStatisType) => {
+    arr.add(x.valid);
+    arr.add(x.required);
+  });
   return !arr.has(false);
 });
 const dirty = computed(() => {
@@ -37,6 +40,7 @@ const dirty = computed(() => {
 const requiredValidity = computed(() => {
   const arr = new Set();
   formState.value?.forEach((x: ValidStatisType) => arr.add(x.required));
+
   return !arr.has(false);
 });
 </script>
